@@ -53,7 +53,9 @@ function fallbackBrief(account: Account, activities: Activity[]): BriefOutput {
   };
 }
 
-export async function generateBrief(accountId: string): Promise<Brief> {
+// Generate + validate a brief but don't persist it — the eval leans on this so a scoring
+// run doesn't fill the store with throwaway briefs.
+export async function composeBrief(accountId: string) {
   const ctx = getAccount(accountId);
   if (!ctx) throw new Error(`unknown account: ${accountId}`);
   const { account, contacts, activities } = ctx;
@@ -88,7 +90,7 @@ export async function generateBrief(accountId: string): Promise<Brief> {
     citations: s.citations.filter((id) => validIds.has(id)),
   }));
 
-  return saveBrief({
+  return {
     accountId,
     sfdcSummary: output.sfdcSummary,
     slackUpdate: output.slackUpdate,
@@ -98,5 +100,10 @@ export async function generateBrief(accountId: string): Promise<Brief> {
     citations,
     grounded,
     meta: { model, latencyMs: Date.now() - started, tokens },
-  });
+  };
+}
+
+// Compose + persist — what the "Generate brief" button calls.
+export async function generateBrief(accountId: string): Promise<Brief> {
+  return saveBrief(await composeBrief(accountId));
 }

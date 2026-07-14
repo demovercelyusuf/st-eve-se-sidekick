@@ -5,6 +5,7 @@ import { generateBrief } from "@/agent/generate-brief";
 import { getAccount, getLatestBrief } from "@/data/repository";
 import { salesforce } from "@/adapters/salesforce";
 import { slack } from "@/adapters/slack";
+import { runEvals } from "@/agent/eval";
 
 export async function generateBriefAction(accountId: string) {
   await generateBrief(accountId);
@@ -28,4 +29,9 @@ export async function postToSlackAction(accountId: string) {
   const ctx = getAccount(accountId);
   if (!brief || !ctx) return { ok: false, note: "Generate a brief first." };
   return slack.postUpdate({ accountName: ctx.account.name, text: brief.slackUpdate });
+}
+
+export async function runEvalsAction() {
+  await runEvals();
+  revalidatePath("/evals");
 }
