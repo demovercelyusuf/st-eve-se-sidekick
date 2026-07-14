@@ -7,7 +7,7 @@ const ITEMS = [
   { href: "/", label: "Command Center" },
   { href: "/copilot", label: "st·eve Copilot" },
   { href: "/evals", label: "Evals" },
-  { href: "/accounts", label: "Accounts" },
+  { href: "/integrations", label: "Integrations" },
 ];
 
 export function SidebarNav() {
