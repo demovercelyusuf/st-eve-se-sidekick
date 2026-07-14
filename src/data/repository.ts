@@ -56,9 +56,14 @@ export function getAccount(accountId: string) {
 type NewBrief = Omit<typeof briefs.$inferInsert, "id" | "createdAt">;
 type NewEvalRun = Omit<typeof evalRuns.$inferInsert, "id" | "createdAt">;
 
-// Process-local fallback when there's no DB. Fine for a single dev server; prod uses Neon.
-const memBriefs: Brief[] = [];
-const memEvalRuns: EvalRun[] = [];
+// Process-local fallback when there's no DB. Module-level state doesn't survive Next's
+// route/RSC boundaries or HMR, so we park it on globalThis — one store per process. (Prod
+// uses Neon; serverless invocations wouldn't share memory anyway.)
+const store = globalThis as unknown as { __steveBriefs?: Brief[]; __steveEvalRuns?: EvalRun[] };
+store.__steveBriefs ??= [];
+store.__steveEvalRuns ??= [];
+const memBriefs = store.__steveBriefs;
+const memEvalRuns = store.__steveEvalRuns;
 
 export async function saveBrief(input: NewBrief): Promise<Brief> {
   if (hasDb && db) {

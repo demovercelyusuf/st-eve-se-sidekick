@@ -7,6 +7,8 @@ import { ActivityTimeline } from "@/components/account/activity-timeline";
 import { getAccount, getLatestBrief } from "@/data/repository";
 import type { Priority, Stage } from "@/lib/domain";
 import { formatArr, priorityBadge, stageBadge } from "@/lib/ui";
+import { GenerateBriefButton } from "@/components/account/generate-brief-button";
+import { BriefView } from "@/components/account/brief-view";
 
 function initials(name: string): string {
   return name
@@ -58,14 +60,17 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
             <div className="flex shrink-0 gap-2">
-              <button className="rounded-[var(--radius)] border border-border bg-surface px-3.5 py-2 text-sm font-semibold">
+              <Link
+                href={`/copilot?account=${account.id}`}
+                className="rounded-[var(--radius)] border border-border bg-surface px-3.5 py-2 text-sm font-semibold"
+              >
                 Ask st·eve
-              </button>
-              <button className="rounded-[var(--radius)] bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg">
-                Generate brief
-              </button>
+              </Link>
+              <GenerateBriefButton accountId={account.id} hasBrief={Boolean(latestBrief)} />
             </div>
           </div>
+
+          {latestBrief && <BriefView brief={latestBrief} accountId={account.id} />}
 
           <section className="rounded-[var(--radius)] border border-border bg-surface p-4">
             <h2 className="mb-3 text-sm font-semibold">Opportunity stage</h2>
@@ -112,14 +117,11 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          <div>
-            <p className="mb-2 text-[11px] font-semibold text-sub">LATEST BRIEF</p>
+          {!latestBrief && (
             <div className="rounded-[var(--radius)] border border-border bg-bg p-3 text-sm text-sub">
-              {latestBrief
-                ? latestBrief.sfdcSummary.slice(0, 160) + "…"
-                : "No brief yet — hit Generate brief and st·eve will draft one from the timeline."}
+              No brief yet — hit Generate brief and st·eve drafts one straight from the timeline.
             </div>
-          </div>
+          )}
         </aside>
       </div>
     </AppShell>
