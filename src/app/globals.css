@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+/*
+ * Theming lives here. Everything reads semantic tokens — never raw hex — so the app
+ * re-skins by flipping data-theme on <html>. The four sets below come straight from
+ * the Figma studies; @theme inline keeps them as live var() refs, which is what makes
+ * the switch instant instead of a rebuild.
+ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-ink: var(--ink);
+  --color-sub: var(--sub);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-fg: var(--accent-fg);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-muted: var(--muted);
+  --color-muted-soft: var(--muted-soft);
+
+  --font-sans: var(--font-theme);
+  --radius: var(--radius-base);
+}
+
+/* Theme A — Vercel mono-minimal (default). Black is the "accent"; color only for status. */
+:root,
+[data-theme="mono"] {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --border: #eaeaea;
+  --ink: #0a0a0a;
+  --sub: #6b6b6b;
+  --accent: #0a0a0a;
+  --accent-soft: #efefef;
+  --accent-fg: #ffffff;
+  --danger: #c0392b;
+  --danger-soft: #fbeae8;
+  --warn: #916a00;
+  --warn-soft: #f7efd6;
+  --success: #1f7a44;
+  --success-soft: #e7f4ec;
+  --info: #1f5fbf;
+  --info-soft: #e8f0fb;
+  --muted: #6b6b6b;
+  --muted-soft: #efefef;
+  --radius-base: 6px;
+  --font-theme: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Theme B — Dark ops console. Accent is light, so on-accent text (`accent-fg`) goes dark. */
+[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --surface: #161616;
+  --border: #2a2a2a;
+  --ink: #ededed;
+  --sub: #8f8f8f;
+  --accent: #b7a6ff;
+  --accent-soft: #221e3d;
+  --accent-fg: #161616;
+  --danger: #ff7a70;
+  --danger-soft: #2e1614;
+  --warn: #ffc94d;
+  --warn-soft: #2e2410;
+  --success: #58e08e;
+  --success-soft: #12271a;
+  --info: #79b4ff;
+  --info-soft: #121f30;
+  --muted: #8f8f8f;
+  --muted-soft: #1f1f1f;
+  --radius-base: 10px;
+  --font-theme: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Theme C — Warm & human. Cream canvas, terracotta accent, rounded. */
+[data-theme="warm"] {
+  --bg: #faf5ec;
+  --surface: #fffcf5;
+  --border: #e8dfd0;
+  --ink: #2a2419;
+  --sub: #8a7e6b;
+  --accent: #c05c36;
+  --accent-soft: #f5e4d9;
+  --accent-fg: #fffcf5;
+  --danger: #b23a2e;
+  --danger-soft: #f6e3de;
+  --warn: #9a6b15;
+  --warn-soft: #f5ead3;
+  --success: #40734a;
+  --success-soft: #e6efdf;
+  --info: #3c6485;
+  --info-soft: #e4ecf1;
+  --muted: #8a7e6b;
+  --muted-soft: #f0e8da;
+  --radius-base: 14px;
+  --font-theme: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Theme D — High-contrast expressive. Electric violet, violet-tinted neutrals, display type. */
+[data-theme="expressive"] {
+  --bg: #f6f3ff;
+  --surface: #ffffff;
+  --border: #e7e1f7;
+  --ink: #0d0d0d;
+  --sub: #5a5570;
+  --accent: #5b2cff;
+  --accent-soft: #ece5ff;
+  --accent-fg: #ffffff;
+  --danger: #e5342b;
+  --danger-soft: #fce6e4;
+  --warn: #b06a00;
+  --warn-soft: #faedd2;
+  --success: #128a4a;
+  --success-soft: #e2f3e9;
+  --info: #2450e0;
+  --info-soft: #e7ecfc;
+  --muted: #5a5570;
+  --muted-soft: #f1edfc;
+  --radius-base: 12px;
+  --font-theme: var(--font-space), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  /* subtle fade on the swap so it reads as a re-skin, not a page reload */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
