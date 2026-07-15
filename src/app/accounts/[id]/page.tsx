@@ -3,10 +3,12 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { Pill } from "@/components/ui/pill";
 import { StageTracker } from "@/components/account/stage-tracker";
-import { ActivityTimeline } from "@/components/account/activity-timeline";
-import { getAccount, getLatestBrief } from "@/data/repository";
+import { AccountPanels, type ActivityRow, type TodoRow } from "@/components/account/account-panels";
+import { getAccount, getLatestBrief, getTodos } from "@/data/repository";
+import { hasDb } from "@/db/client";
 import type { Priority, Stage } from "@/lib/domain";
-import { formatArr, priorityBadge, stageBadge } from "@/lib/ui";
+import { formatArr, priorityBadge, relativeTime, stageBadge } from "@/lib/ui";
+import { SEED_ANCHOR } from "@/lib/seed/accounts";
 import { GenerateBriefButton } from "@/components/account/generate-brief-button";
 import { BriefView } from "@/components/account/brief-view";
 
@@ -34,7 +36,18 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
   if (!data) notFound();
 
   const { account, contacts, activities } = data;
-  const latestBrief = await getLatestBrief(id);
+  const [latestBrief, todos] = await Promise.all([getLatestBrief(id), getTodos(id)]);
+
+  // Pre-format on the server so the client tab doesn't pull in the seed anchor.
+  const activityRows: ActivityRow[] = activities.map((a) => ({
+    id: a.id,
+    kind: a.kind,
+    summary: a.summary,
+    body: a.body,
+    timeLabel: relativeTime(a.occurredAt, SEED_ANCHOR),
+  }));
+  const todoRows: TodoRow[] = todos.map((t) => ({ id: t.id, text: t.text, done: t.done, priority: t.priority, due: t.due }));
+
   const stage = stageBadge(account.stage as Stage);
   const priority = priorityBadge(account.priority as Priority);
   const champion = contacts.find((c) => c.relationship === "champion");
@@ -77,13 +90,7 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
             <StageTracker stage={account.stage as Stage} />
           </section>
 
-          <section className="rounded-[var(--radius)] border border-border bg-surface p-4">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Activity timeline</h2>
-              <span className="text-xs text-sub">the context st·eve reads · {activities.length} items</span>
-            </div>
-            <ActivityTimeline activities={activities} />
-          </section>
+          <AccountPanels accountId={account.id} canEdit={hasDb} activities={activityRows} todos={todoRows} />
         </div>
 
         <aside className="flex w-80 shrink-0 flex-col gap-5">
