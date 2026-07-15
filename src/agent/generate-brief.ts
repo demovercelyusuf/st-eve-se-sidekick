@@ -6,6 +6,10 @@ import { relativeTime } from "@/lib/ui";
 import { briefSchema, type BriefOutput } from "./brief-schema";
 import { GENERATION_MODEL, gatewayReady } from "./models";
 
+// Either the live account context (from the DB) or the pinned seed context — the eval passes the
+// latter so a scoring run always grades against the same ground truth, even after a user edits.
+type AccountContext = { account: Account; contacts: Contact[]; activities: Activity[] };
+
 function buildPrompt(account: Account, contacts: Contact[], activities: Activity[]): string {
   const people = contacts
     .map((c) => `- ${c.name}, ${c.title} (${c.relationship}, ${c.sentiment})`)
@@ -55,10 +59,10 @@ function fallbackBrief(account: Account, activities: Activity[]): BriefOutput {
 
 // Generate + validate a brief but don't persist it — the eval leans on this so a scoring
 // run doesn't fill the store with throwaway briefs.
-export async function composeBrief(accountId: string) {
-  const ctx = getAccount(accountId);
-  if (!ctx) throw new Error(`unknown account: ${accountId}`);
-  const { account, contacts, activities } = ctx;
+export async function composeBrief(accountId: string, ctx?: AccountContext) {
+  const context = ctx ?? (await getAccount(accountId));
+  if (!context) throw new Error(`unknown account: ${accountId}`);
+  const { account, contacts, activities } = context;
   const validIds = new Set(activities.map((a) => a.id));
 
   const started = Date.now();

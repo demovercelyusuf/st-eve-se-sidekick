@@ -153,12 +153,30 @@ export const evalRuns = pgTable("eval_runs", {
     .notNull(),
 });
 
+// A lightweight to-do per account — the SE's own checklist, separate from the agent's
+// generated next steps (those live on the brief). This is user-owned, mutable state.
+export const todos = pgTable(
+  "todos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: text("account_id").notNull(), // plain ref, same reasoning as briefs
+    text: text("text").notNull(),
+    done: boolean("done").notNull().default(false),
+    priority: priorityEnum("priority").notNull().default("medium"),
+    due: text("due"), // freeform — "Fri", "before EOQ"
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("todos_account_idx").on(t.accountId)],
+);
+
 export type Persona = typeof personas.$inferSelect;
 export type Account = typeof accounts.$inferSelect;
 export type Contact = typeof contacts.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
 export type Brief = typeof briefs.$inferSelect;
 export type EvalRun = typeof evalRuns.$inferSelect;
+export type Todo = typeof todos.$inferSelect;
+export type NewTodo = typeof todos.$inferInsert;
 
 export type AccountSeed = typeof accounts.$inferInsert;
 export type ContactSeed = typeof contacts.$inferInsert;

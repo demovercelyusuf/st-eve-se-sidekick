@@ -15,7 +15,7 @@ export async function generateBriefAction(accountId: string) {
 
 export async function copyToSalesforceAction(accountId: string) {
   const brief = await getLatestBrief(accountId);
-  const ctx = getAccount(accountId);
+  const ctx = await getAccount(accountId);
   if (!brief || !ctx) return { ok: false, note: "Generate a brief first." };
   return salesforce.pushSummary({
     accountId,
@@ -26,7 +26,7 @@ export async function copyToSalesforceAction(accountId: string) {
 
 export async function postToSlackAction(accountId: string) {
   const brief = await getLatestBrief(accountId);
-  const ctx = getAccount(accountId);
+  const ctx = await getAccount(accountId);
   if (!brief || !ctx) return { ok: false, note: "Generate a brief first." };
   return slack.postUpdate({ accountName: ctx.account.name, text: brief.slackUpdate });
 }
