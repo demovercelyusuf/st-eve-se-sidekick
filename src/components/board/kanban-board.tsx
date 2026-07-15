@@ -25,19 +25,24 @@ export function KanbanBoard({ initial, canEdit }: { initial: BoardCard[]; canEdi
   const [dragId, setDragId] = useState<string | null>(null);
   const [over, setOver] = useState<Stage | null>(null);
 
-  function drop(stage: Stage) {
-    const id = dragId;
-    setOver(null);
-    setDragId(null);
-    if (!id) return;
+  // Restage a card and persist. Drag-drop uses this on desktop; the per-card dropdown uses it on
+  // touch, where HTML5 drag events don't fire.
+  function restage(id: string, stage: Stage) {
     const card = cards.find((c) => c.id === id);
     if (!card || card.stage === stage) return;
     setCards((cs) => cs.map((c) => (c.id === id ? { ...c, stage } : c)));
     updateAccountAction(id, { stage });
   }
 
+  function drop(stage: Stage) {
+    const id = dragId;
+    setOver(null);
+    setDragId(null);
+    if (id) restage(id, stage);
+  }
+
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2">
+    <div className="flex snap-x gap-3 overflow-x-auto pb-2">
       {STAGE_ORDER.map((stage) => {
         const column = cards.filter((c) => c.stage === stage);
         return (
@@ -51,7 +56,7 @@ export function KanbanBoard({ initial, canEdit }: { initial: BoardCard[]; canEdi
             }}
             onDragLeave={() => setOver((s) => (s === stage ? null : s))}
             onDrop={() => drop(stage)}
-            className={`flex w-56 shrink-0 flex-col gap-2 rounded-[var(--radius)] border p-2 transition-colors ${
+            className={`flex w-56 shrink-0 snap-start flex-col gap-2 rounded-[var(--radius)] border p-2 transition-colors ${
               over === stage ? "border-accent bg-accent-soft/40" : "border-border bg-bg"
             }`}
           >
@@ -82,8 +87,22 @@ export function KanbanBoard({ initial, canEdit }: { initial: BoardCard[]; canEdi
                 <div className="mt-0.5 text-xs text-sub">
                   {c.industry} · {formatArr(c.arr)}
                 </div>
-                <div className="mt-2">
+                <div className="mt-2 flex items-center justify-between gap-2">
                   <Pill tone={priorityBadge(c.priority).tone}>{PRIORITY_LABEL[c.priority]}</Pill>
+                  {canEdit && (
+                    <select
+                      value={c.stage}
+                      onChange={(e) => restage(c.id, e.target.value as Stage)}
+                      aria-label={`Move ${c.name} to another stage`}
+                      className="rounded-[var(--radius)] border border-border bg-bg px-1.5 py-1 text-[11px] text-sub outline-none sm:hidden"
+                    >
+                      {STAGE_ORDER.map((s) => (
+                        <option key={s} value={s}>
+                          {STAGE_LABEL[s]}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
             ))}

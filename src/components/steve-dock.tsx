@@ -91,9 +91,13 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
   }
 
   // ---- open: terminal chat + router panel (themed) ----
+  // On phones the open dock is a bottom sheet (full-width, anchored to the bottom, height in dvh so
+  // it sits above the keyboard); on sm+ it's the floating bottom-right panel.
   const shell = maximized
     ? "inset-3 sm:inset-6"
-    : `bottom-5 right-5 w-[min(46rem,calc(100vw-2.5rem))]${minimized ? "" : " h-[32rem]"}`;
+    : minimized
+      ? "bottom-3 left-3 right-3 sm:left-auto sm:right-5 sm:w-[min(46rem,calc(100vw-2.5rem))]"
+      : "bottom-3 left-3 right-3 h-[70dvh] sm:bottom-5 sm:left-auto sm:right-5 sm:h-[32rem] sm:w-[min(46rem,calc(100vw-2.5rem))]";
 
   return (
     <div

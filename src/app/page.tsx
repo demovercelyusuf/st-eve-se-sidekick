@@ -15,11 +15,11 @@ export default async function Landing() {
   return (
     <div className="flex min-h-screen flex-col bg-bg text-ink">
       {/* nav */}
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5">
         <span className="text-lg font-bold tracking-tight">
           ST<span className="text-accent">•</span>EVE
         </span>
-        <nav className="flex items-center gap-5">
+        <nav className="flex items-center gap-2.5 sm:gap-5">
           <ThemeSwitcher initial={theme} />
           <MotionLink
             href="/app"
