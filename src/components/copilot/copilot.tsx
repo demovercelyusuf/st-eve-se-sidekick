@@ -9,7 +9,7 @@ type Focus = { id: string; name: string };
 function suggestionsFor(focus?: Focus): string[] {
   const base = [
     "Which accounts need attention this week?",
-    "Summarize Northwind Logistics for Salesforce",
+    "Summarize Notion for Salesforce",
     "Who's gone quiet in the last week?",
   ];
   return focus

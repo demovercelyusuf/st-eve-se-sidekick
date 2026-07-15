@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { Geist, Poppins, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { DEFAULT_THEME, isThemeId, THEME_COOKIE } from "@/lib/themes";
-import { Analytics } from "@/components/analytics";
 import { SteveDock } from "@/components/steve-dock";
 import { gatewayReady } from "@/agent/models";
 
@@ -44,10 +43,8 @@ export default async function RootLayout({
       className={`${geist.variable} ${poppins.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <Analytics>
-          {children}
-          <SteveDock gatewayReady={gatewayReady} />
-        </Analytics>
+        {children}
+        <SteveDock gatewayReady={gatewayReady} />
       </body>
     </html>
   );
