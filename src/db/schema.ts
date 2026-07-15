@@ -116,9 +116,9 @@ export type Citation = { label: string; activityId: string };
 // What a "Generate brief" run produces and we hand to the UI / Salesforce / Slack.
 export const briefs = pgTable("briefs", {
   id: uuid("id").primaryKey().defaultRandom(),
-  accountId: text("account_id")
-    .notNull()
-    .references(() => accounts.id),
+  // plain reference, not a DB foreign key — accounts live in the seed / the CRM, not this DB,
+  // so a FK here would just reject every insert against an empty accounts table.
+  accountId: text("account_id").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   sfdcSummary: text("sfdc_summary").notNull(),
   slackUpdate: text("slack_update").notNull(),
