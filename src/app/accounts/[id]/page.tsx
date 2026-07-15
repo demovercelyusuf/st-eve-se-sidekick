@@ -5,6 +5,7 @@ import { Pill } from "@/components/ui/pill";
 import { StageTracker } from "@/components/account/stage-tracker";
 import { AccountPanels, type ActivityRow, type TodoRow } from "@/components/account/account-panels";
 import { EditableAm } from "@/components/account/editable-am";
+import { EditableContacts, type ContactRow } from "@/components/account/editable-contacts";
 import { getAccount, getLatestBrief, getPersonas, getTodos } from "@/data/repository";
 import { hasDb } from "@/db/client";
 import type { Priority, Stage } from "@/lib/domain";
@@ -12,15 +13,6 @@ import { formatArr, priorityBadge, relativeTime, stageBadge } from "@/lib/ui";
 import { SEED_ANCHOR } from "@/lib/seed/accounts";
 import { AccountBrief } from "@/components/account/account-brief";
 import { gatewayReady } from "@/agent/models";
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 function Kv({ k, v }: { k: string; v: string }) {
   return (
@@ -115,22 +107,13 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          <div>
-            <p className="mb-2 text-[11px] font-semibold text-sub">KEY CONTACTS</p>
-            <div className="flex flex-col gap-3">
-              {contacts.map((c) => (
-                <div key={c.id} className="flex items-center gap-3">
-                  <div className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
-                    {initials(c.name)}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold">{c.name}</div>
-                    <div className="truncate text-xs text-sub">{c.title}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <EditableContacts
+            accountId={account.id}
+            canEdit={hasDb}
+            contacts={contacts.map(
+              (c): ContactRow => ({ id: c.id, name: c.name, title: c.title, relationship: c.relationship }),
+            )}
+          />
 
           {!latestBrief && (
             <div className="rounded-[var(--radius)] border border-border bg-bg p-3 text-sm text-sub">

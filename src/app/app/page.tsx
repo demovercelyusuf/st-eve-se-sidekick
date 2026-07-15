@@ -14,7 +14,7 @@ const DEFAULT_PERSONA = "you";
 
 function Tile({ n, label, tone }: { n: number; label: string; tone?: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
+    <div className="lift rounded-[var(--radius)] border border-border bg-surface p-4">
       <div className={`text-2xl font-bold ${tone ?? "text-ink"}`}>{n}</div>
       <div className="text-xs text-sub">{label}</div>
     </div>

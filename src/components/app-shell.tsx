@@ -6,6 +6,7 @@ import { hasDb } from "@/db/client";
 import { ThemeSwitcher } from "./theme-switcher";
 import { SidebarNav } from "./sidebar-nav";
 import { ProfileMenu } from "./profile-menu";
+import { PageTransition } from "./ui/page-transition";
 
 /**
  * Desktop chrome — the top bar (brand, theme switcher, persona) and the workspace
@@ -43,7 +44,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <p className="mb-2 px-2 text-[11px] font-semibold tracking-wide text-sub">WORKSPACE</p>
           <SidebarNav />
         </aside>
-        <main className="min-w-0 flex-1 p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-6">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   );

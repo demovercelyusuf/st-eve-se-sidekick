@@ -1,8 +1,7 @@
-import Link from "next/link";
-import Image from "next/image";
 import { cookies } from "next/headers";
 import { DEFAULT_THEME, isThemeId, THEME_COOKIE, type ThemeId } from "@/lib/themes";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { FloatingMascot, MotionLink, Reveal } from "@/components/ui/motion";
 
 // The public front door. One screen: the promise, proof of what st·eve produces, and a single
 // way in. It renders in whatever theme the cookie holds, and the swatches in the nav re-skin it
@@ -22,19 +21,21 @@ export default async function Landing() {
         </span>
         <nav className="flex items-center gap-5">
           <ThemeSwitcher initial={theme} />
-          <Link
+          <MotionLink
             href="/app"
-            className="rounded-[var(--radius)] bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition-opacity hover:opacity-90"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            className="rounded-[var(--radius)] bg-accent px-4 py-2 text-sm font-semibold text-accent-fg"
           >
             Launch ST•EVE →
-          </Link>
+          </MotionLink>
         </nav>
       </header>
 
       {/* hero */}
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6">
         <section className="grid flex-1 items-center gap-12 py-14 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-20">
-          <div className="flex flex-col gap-6">
+          <Reveal className="flex flex-col gap-6">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
               The vercelian SE copilot
             </span>
@@ -48,28 +49,23 @@ export default async function Landing() {
               and more — so your hours go to customers, not status reports.
             </p>
             <div className="flex flex-wrap items-center gap-4 pt-1">
-              <Link
+              <MotionLink
                 href="/app"
-                className="rounded-[var(--radius)] bg-accent px-5 py-3 text-base font-semibold text-accent-fg transition-opacity hover:opacity-90"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                className="rounded-[var(--radius)] bg-accent px-5 py-3 text-base font-semibold text-accent-fg"
               >
                 Launch ST•EVE →
-              </Link>
+              </MotionLink>
               <span className="text-sm text-sub">Grounded in your activity timeline — every claim cited.</span>
             </div>
-          </div>
+          </Reveal>
 
           {/* proof: a weekly brief the way st·eve writes it, with the mascot presenting it */}
-          <div className="relative">
-            <Image
-              src="/steve.png"
-              alt="st·eve, the copilot mascot"
-              width={132}
-              height={132}
-              priority
-              className="absolute -top-14 -right-2 z-10 hidden object-contain drop-shadow-xl sm:block"
-            />
+          <Reveal delay={0.1} className="relative">
+            <FloatingMascot className="absolute -top-10 right-0 z-10 sm:-top-14 sm:-right-2" />
             <BriefCard />
-          </div>
+          </Reveal>
         </section>
       </main>
 
