@@ -21,7 +21,6 @@ import {
   type NewAccount,
 } from "@/data/repository";
 import type { Contact } from "@/db/schema";
-import { resetDemo } from "@/data/provision";
 import type { Activity } from "@/db/schema";
 import { slack } from "@/adapters/slack";
 import { runPatchHealth } from "@/agent/eval";
@@ -127,10 +126,4 @@ export async function deleteContactAction(accountId: string, id: string) {
 export async function updateProfileAction(name: string) {
   await updatePersona("you", { name });
   revalidatePath("/", "layout"); // the identity chip lives in the shared shell
-}
-
-// Wipe every edit and reload the pristine seed — the "put the demo back" button.
-export async function resetDemoAction() {
-  await resetDemo();
-  revalidatePath("/", "layout");
 }

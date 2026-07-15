@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { resetDemoAction, updateProfileAction } from "@/app/actions";
+import { useEffect, useRef, useState } from "react";
+import { updateProfileAction } from "@/app/actions";
 
-// The identity chip in the top bar, now a real menu: rename yourself, see which AMs you're
-// aligned to across the patch, and reset the demo data back to the seed.
+// The identity chip in the top bar, now a real menu: rename yourself and see which AMs you're
+// aligned to across the patch.
 export function ProfileMenu({
   name,
   accountCount,
@@ -18,8 +18,6 @@ export function ProfileMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [display, setDisplay] = useState(name);
-  const [confirmReset, setConfirmReset] = useState(false);
-  const [resetting, startReset] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
 
   // Mirror display into a ref so the click-outside handler saves the *current* value — the
@@ -82,37 +80,6 @@ export function ProfileMenu({
             ))}
             {ams.length === 0 && <span className="text-xs text-sub">No AMs on the patch yet.</span>}
           </div>
-
-          {canEdit && (
-            <div className="mt-4 border-t border-border pt-3">
-              {confirmReset ? (
-                <div className="flex items-center justify-between gap-2 text-sm">
-                  <span className="text-sub">Wipe edits, reload seed?</span>
-                  <span className="flex gap-2">
-                    <button
-                      type="button"
-                      disabled={resetting}
-                      onClick={() => startReset(async () => { await resetDemoAction(); setConfirmReset(false); setOpen(false); })}
-                      className="font-semibold text-danger"
-                    >
-                      {resetting ? "Resetting…" : "Reset"}
-                    </button>
-                    <button type="button" onClick={() => setConfirmReset(false)} className="text-sub">
-                      Cancel
-                    </button>
-                  </span>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setConfirmReset(true)}
-                  className="text-sm font-medium text-sub hover:text-danger"
-                >
-                  Reset demo data
-                </button>
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>

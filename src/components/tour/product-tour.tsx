@@ -96,13 +96,12 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
 
   const step = steps[i];
 
+  // Read the target's box only — no scrolling here, so the user can scroll freely during a step.
   const measure = useCallback(() => {
     const el = step?.target ? (document.querySelector(step.target) as HTMLElement | null) : null;
     if (!el) return setRect((r) => (r === null ? r : null));
-    el.scrollIntoView({ block: "center", behavior: "smooth" });
     const r = el.getBoundingClientRect();
-    // only update when the box actually moved — getBoundingClientRect returns a fresh object each
-    // call, and setting it unconditionally would re-render on every scroll frame.
+    // getBoundingClientRect returns a fresh object each call — only update when the box moved.
     setRect((prev) =>
       prev && prev.top === r.top && prev.left === r.left && prev.width === r.width && prev.height === r.height
         ? prev
@@ -110,22 +109,32 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
     );
   }, [step]);
 
-  // re-measure on step change, and while things scroll/resize into place
+  // On step change: bring the target into view once — doing it on every scroll fought the user and
+  // locked scrolling. Then re-measure a couple of times as the smooth scroll settles.
   useEffect(() => {
     if (!active) return;
+    const el = step?.target ? (document.querySelector(step.target) as HTMLElement | null) : null;
+    el?.scrollIntoView({ block: "center", behavior: "smooth" });
     measure();
-    const on = () => measure();
-    window.addEventListener("resize", on);
-    window.addEventListener("scroll", on, true);
-    const t1 = setTimeout(measure, 260);
-    const t2 = setTimeout(measure, 520);
+    const t1 = setTimeout(measure, 300);
+    const t2 = setTimeout(measure, 600);
     return () => {
-      window.removeEventListener("resize", on);
-      window.removeEventListener("scroll", on, true);
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [active, i, measure]);
+  }, [active, i, step, measure]);
+
+  // Keep the spotlight glued to the target as the user scrolls or resizes — no auto-scroll.
+  useEffect(() => {
+    if (!active) return;
+    const on = () => measure();
+    window.addEventListener("scroll", on, true);
+    window.addEventListener("resize", on);
+    return () => {
+      window.removeEventListener("scroll", on, true);
+      window.removeEventListener("resize", on);
+    };
+  }, [active, measure]);
 
   const close = useCallback(() => {
     setActive(false);
@@ -178,11 +187,13 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
   const isLast = i === steps.length - 1;
 
   return createPortal(
-    <div className="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label="Product tour">
-      {/* dimmer + spotlight (box-shadow cut-out). Click the dim to skip. */}
+    <div className="pointer-events-none fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label="Product tour">
+      {/* Spotlight (a box-shadow cut-out). Purely visual and click-through, so the user can scroll
+          and even click the highlighted element (e.g. a theme swatch) without leaving the tour. The
+          full-screen dimmer only appears on the intro/outro steps, where there's nothing to click —
+          click it to skip. */}
       {rect ? (
         <div
-          onClick={close}
           style={{
             position: "fixed",
             top: rect.top - pad,
@@ -192,15 +203,16 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
             borderRadius: 14,
             boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
             transition: "all 0.25s ease",
+            pointerEvents: "none",
           }}
         />
       ) : (
-        <div onClick={close} className="absolute inset-0 bg-black/55" />
+        <div onClick={close} className="pointer-events-auto absolute inset-0 bg-black/55" />
       )}
 
       <div
         style={{ position: "fixed", width: CARD_W, ...card, transition: "left 0.2s ease, top 0.2s ease" }}
-        className="z-[71] rounded-[calc(var(--radius)+4px)] border border-border bg-surface p-5 text-ink shadow-2xl"
+        className="pointer-events-auto z-[71] rounded-[calc(var(--radius)+4px)] border border-border bg-surface p-5 text-ink shadow-2xl"
       >
           <button
             type="button"

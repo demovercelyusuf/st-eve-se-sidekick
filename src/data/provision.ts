@@ -10,7 +10,7 @@ import { ACCOUNTS, ACTIVITIES, CONTACTS, PERSONAS, SEED_VERSION } from "@/lib/se
  * var — it never comes down to a laptop — so there's no local path to the DB. The running app,
  * though, has it. So we provision and seed from inside the app: create the tables if they're
  * missing and load them from the in-repo seed. `ensureSeeded` does this lazily on first access
- * (self-healing, no manual step); `resetDemo` is the explicit "put the demo back" button.
+ * (self-healing, no manual step).
  */
 
 // Idempotent DDL — safe to run on every cold start. Enums need the DO/EXCEPTION dance because
@@ -79,12 +79,4 @@ export async function ensureSeeded() {
   } catch (err) {
     console.error("[provision] ensureSeeded failed, staying on seed fallback:", err);
   }
-}
-
-// The explicit "reset to demo" action — same reload, forced.
-export async function resetDemo() {
-  if (!hasDb || !db) return;
-  await provisionSchema();
-  await reload();
-  ensured = true;
 }
