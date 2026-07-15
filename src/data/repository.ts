@@ -284,3 +284,10 @@ export async function deleteTodo(id: string): Promise<void> {
   if (!hasDb || !db) return;
   await db.delete(todos).where(eq(todos.id, id));
 }
+
+// ---- profile (the SE persona itself) ----
+
+export async function updatePersona(id: string, patch: { name?: string; blurb?: string }): Promise<void> {
+  if (!hasDb || !db) return;
+  await db.update(personas).set(patch).where(eq(personas.id, id));
+}

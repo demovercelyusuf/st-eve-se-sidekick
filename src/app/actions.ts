@@ -12,9 +12,11 @@ import {
   getLatestBrief,
   toggleTodo,
   updateAccount,
+  updatePersona,
   type AccountPatch,
   type NewAccount,
 } from "@/data/repository";
+import { resetDemo } from "@/data/provision";
 import type { Activity } from "@/db/schema";
 import { salesforce } from "@/adapters/salesforce";
 import { slack } from "@/adapters/slack";
@@ -95,4 +97,17 @@ export async function toggleTodoAction(accountId: string, id: string, done: bool
 export async function deleteTodoAction(accountId: string, id: string) {
   await deleteTodo(id);
   revalidatePath(`/accounts/${accountId}`);
+}
+
+// ---- profile ----
+
+export async function updateProfileAction(name: string) {
+  await updatePersona("you", { name });
+  revalidatePath("/", "layout"); // the identity chip lives in the shared shell
+}
+
+// Wipe every edit and reload the pristine seed — the "put the demo back" button.
+export async function resetDemoAction() {
+  await resetDemo();
+  revalidatePath("/", "layout");
 }
