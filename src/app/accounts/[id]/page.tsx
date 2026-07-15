@@ -10,8 +10,8 @@ import { hasDb } from "@/db/client";
 import type { Priority, Stage } from "@/lib/domain";
 import { formatArr, priorityBadge, relativeTime, stageBadge } from "@/lib/ui";
 import { SEED_ANCHOR } from "@/lib/seed/accounts";
-import { GenerateBriefButton } from "@/components/account/generate-brief-button";
-import { BriefView } from "@/components/account/brief-view";
+import { AccountBrief } from "@/components/account/account-brief";
+import { gatewayReady } from "@/agent/models";
 
 function initials(name: string): string {
   return name
@@ -73,18 +73,15 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
                 </span>
               </div>
             </div>
-            <div className="flex shrink-0 gap-2">
-              <Link
-                href={`/copilot?account=${account.id}`}
-                className="rounded-[var(--radius)] border border-border bg-surface px-3.5 py-2 text-sm font-semibold"
-              >
-                Ask st·eve
-              </Link>
-              <GenerateBriefButton accountId={account.id} hasBrief={Boolean(latestBrief)} />
-            </div>
+            <Link
+              href={`/copilot?account=${account.id}`}
+              className="shrink-0 rounded-[var(--radius)] border border-border bg-surface px-3.5 py-2 text-sm font-semibold"
+            >
+              Ask st·eve
+            </Link>
           </div>
 
-          {latestBrief && <BriefView brief={latestBrief} accountId={account.id} />}
+          <AccountBrief accountId={account.id} gatewayReady={gatewayReady} initialBrief={latestBrief} />
 
           <section className="rounded-[var(--radius)] border border-border bg-surface p-4">
             <h2 className="mb-3 text-sm font-semibold">Opportunity stage</h2>
