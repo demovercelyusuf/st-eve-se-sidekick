@@ -22,20 +22,29 @@ export function ProfileMenu({
   const [resetting, startReset] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [open]);
+  // Mirror display into a ref so the click-outside handler saves the *current* value — the
+  // mousedown that closes the menu fires before the input's blur, so we can't rely on onBlur.
+  const displayRef = useRef(display);
+  displayRef.current = display;
 
   function saveName() {
-    const n = display.trim() || "You";
+    const n = displayRef.current.trim() || "You";
     setDisplay(n);
     if (n !== name) updateProfileAction(n);
   }
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        saveName();
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, name]);
 
   return (
     <div className="relative" ref={ref}>
