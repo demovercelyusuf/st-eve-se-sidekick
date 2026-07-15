@@ -20,7 +20,7 @@ import { resetDemo } from "@/data/provision";
 import type { Activity } from "@/db/schema";
 import { salesforce } from "@/adapters/salesforce";
 import { slack } from "@/adapters/slack";
-import { runEvals } from "@/agent/eval";
+import { runPatchHealth } from "@/agent/eval";
 
 export async function generateBriefAction(accountId: string) {
   await generateBrief(accountId);
@@ -46,9 +46,8 @@ export async function postToSlackAction(accountId: string) {
   return slack.postUpdate({ accountName: ctx.account.name, text: brief.slackUpdate });
 }
 
-export async function runEvalsAction() {
-  await runEvals();
-  revalidatePath("/evals");
+export async function runPatchHealthAction() {
+  return runPatchHealth();
 }
 
 // ---- account editing ----

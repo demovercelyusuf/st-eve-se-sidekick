@@ -5,13 +5,11 @@ import {
   activities,
   briefs,
   contacts,
-  evalRuns,
   personas,
   todos,
   type Account,
   type Activity,
   type Brief,
-  type EvalRun,
   type Persona,
   type Todo,
 } from "@/db/schema";
@@ -120,16 +118,13 @@ function buildPatch(list: Account[]) {
 // ---- generated artifacts ----
 
 type NewBrief = Omit<typeof briefs.$inferInsert, "id" | "createdAt">;
-type NewEvalRun = Omit<typeof evalRuns.$inferInsert, "id" | "createdAt">;
 
 // Process-local fallback when there's no DB. Module-level state doesn't survive Next's
 // route/RSC boundaries or HMR, so we park it on globalThis — one store per process. (Prod
 // uses Neon; serverless invocations wouldn't share memory anyway.)
-const store = globalThis as unknown as { __steveBriefs?: Brief[]; __steveEvalRuns?: EvalRun[] };
+const store = globalThis as unknown as { __steveBriefs?: Brief[] };
 store.__steveBriefs ??= [];
-store.__steveEvalRuns ??= [];
 const memBriefs = store.__steveBriefs;
-const memEvalRuns = store.__steveEvalRuns;
 
 export async function saveBrief(input: NewBrief): Promise<Brief> {
   if (hasDb && db) {
@@ -152,23 +147,6 @@ export async function getLatestBrief(accountId: string): Promise<Brief | null> {
     return row ?? null;
   }
   return memBriefs.find((b) => b.accountId === accountId) ?? null;
-}
-
-export async function saveEvalRun(input: NewEvalRun): Promise<EvalRun> {
-  if (hasDb && db) {
-    const [row] = await db.insert(evalRuns).values(input).returning();
-    return row;
-  }
-  const row: EvalRun = { ...input, id: crypto.randomUUID(), createdAt: new Date() };
-  memEvalRuns.unshift(row);
-  return row;
-}
-
-export async function getEvalRuns(limit = 10): Promise<EvalRun[]> {
-  if (hasDb && db) {
-    return db.select().from(evalRuns).orderBy(desc(evalRuns.createdAt)).limit(limit);
-  }
-  return memEvalRuns.slice(0, limit);
 }
 
 // ---- account mutations (Neon only; seed mode is read-only, which the UI reflects) ----
