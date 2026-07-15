@@ -49,16 +49,19 @@ export async function runEvalsAction() {
 export async function updateAccountAction(id: string, patch: AccountPatch) {
   await updateAccount(id, patch);
   revalidatePath("/");
+  revalidatePath("/board");
   revalidatePath(`/accounts/${id}`);
 }
 
 export async function addAccountAction(input: NewAccount) {
   const id = await createAccount(input);
   revalidatePath("/");
+  revalidatePath("/board");
   return id;
 }
 
 export async function deleteAccountAction(id: string) {
   await deleteAccount(id);
   revalidatePath("/");
+  revalidatePath("/board");
 }
