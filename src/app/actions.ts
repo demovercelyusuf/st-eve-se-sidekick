@@ -18,7 +18,6 @@ import {
 } from "@/data/repository";
 import { resetDemo } from "@/data/provision";
 import type { Activity } from "@/db/schema";
-import { salesforce } from "@/adapters/salesforce";
 import { slack } from "@/adapters/slack";
 import { runPatchHealth } from "@/agent/eval";
 
@@ -28,22 +27,19 @@ export async function generateBriefAction(accountId: string) {
   revalidatePath(`/accounts/${accountId}`);
 }
 
-export async function copyToSalesforceAction(accountId: string) {
-  const brief = await getLatestBrief(accountId);
+// Post to Slack. The Salesforce side copies client-side (clipboard), so there's no server
+// action for it — the mock adapter's write-back is the Q4 integration. Here the client passes
+// the fully composed message (body + SE + timestamp); we fall back to the stored update if not.
+export async function postToSlackAction(accountId: string, text?: string) {
   const ctx = await getAccount(accountId);
-  if (!brief || !ctx) return { ok: false, note: "Generate a brief first." };
-  return salesforce.pushSummary({
-    accountId,
-    accountName: ctx.account.name,
-    summary: brief.sfdcSummary,
-  });
-}
-
-export async function postToSlackAction(accountId: string) {
-  const brief = await getLatestBrief(accountId);
-  const ctx = await getAccount(accountId);
-  if (!brief || !ctx) return { ok: false, note: "Generate a brief first." };
-  return slack.postUpdate({ accountName: ctx.account.name, text: brief.slackUpdate });
+  if (!ctx) return { ok: false, note: "Generate a brief first." };
+  let body = text;
+  if (!body) {
+    const brief = await getLatestBrief(accountId);
+    if (!brief) return { ok: false, note: "Generate a brief first." };
+    body = brief.slackUpdate;
+  }
+  return slack.postUpdate({ accountName: ctx.account.name, text: body });
 }
 
 export async function runPatchHealthAction() {

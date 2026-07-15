@@ -2,12 +2,22 @@ import type { Brief } from "@/db/schema";
 import type { Priority, Stage } from "@/lib/domain";
 import { Pill } from "@/components/ui/pill";
 import { priorityBadge, stageBadge } from "@/lib/ui";
-import { BriefActions } from "./brief-actions";
+import { BriefDelivery } from "./brief-delivery";
 
 // The payoff: what st-eve produced from the timeline. Stage it inferred (+ how sure it is
 // and whether every claim was grounded), the Salesforce summary, the Slack update, the
 // prioritized next steps, and the sources behind it.
-export function BriefView({ brief, accountId }: { brief: Brief; accountId: string }) {
+export function BriefView({
+  brief,
+  accountId,
+  accountName,
+  seName,
+}: {
+  brief: Brief;
+  accountId: string;
+  accountName: string;
+  seName?: string | null;
+}) {
   const stage = stageBadge(brief.inferredStage as Stage);
 
   return (
@@ -33,17 +43,13 @@ export function BriefView({ brief, accountId }: { brief: Brief; accountId: strin
         )}
       </header>
 
-      <div>
-        <div className="mb-1 text-sm font-semibold">Salesforce-ready summary</div>
-        <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{brief.sfdcSummary}</p>
-      </div>
-
-      <div>
-        <div className="mb-1 text-sm font-semibold">Slack update</div>
-        <div className="whitespace-pre-wrap rounded-[var(--radius)] border border-border bg-bg p-3 text-[13px] leading-relaxed">
-          {brief.slackUpdate}
-        </div>
-      </div>
+      <BriefDelivery
+        accountId={accountId}
+        accountName={accountName}
+        sfdcSummary={brief.sfdcSummary}
+        slackUpdate={brief.slackUpdate}
+        seName={seName}
+      />
 
       {brief.nextSteps.length > 0 && (
         <div>
@@ -83,8 +89,6 @@ export function BriefView({ brief, accountId }: { brief: Brief; accountId: strin
           </div>
         </div>
       )}
-
-      <BriefActions accountId={accountId} />
     </section>
   );
 }

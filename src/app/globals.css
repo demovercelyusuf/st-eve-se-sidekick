@@ -141,3 +141,19 @@ body {
   /* subtle fade on the swap so it reads as a re-skin, not a page reload */
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+/*
+ * Interaction defaults. Tailwind v4's reset drops the browser's pointer cursor on
+ * <button>, so anything clickable gets it back here — the hit area is exactly the
+ * padded control, nothing wider. Disabled controls read as unavailable.
+ */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+summary {
+  cursor: pointer;
+}
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}

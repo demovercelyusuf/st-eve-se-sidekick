@@ -43,8 +43,9 @@ export default async function Landing() {
               <br className="hidden sm:block" /> less on status updates.
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-sub">
-              st·eve rebuilds each account&apos;s context, drafts the Salesforce summary and Slack
-              update, and calls the next move — so your hours go to customers, not status reports.
+              st·eve takes each account&apos;s context from its activities and latest updates, drafts
+              the Salesforce summary and Slack update, and keeps track of account status, next steps,
+              and more — so your hours go to customers, not status reports.
             </p>
             <div className="flex flex-wrap items-center gap-4 pt-1">
               <Link
@@ -68,30 +69,6 @@ export default async function Landing() {
               className="absolute -top-14 -right-2 z-10 hidden object-contain drop-shadow-xl sm:block"
             />
             <BriefCard />
-          </div>
-        </section>
-
-        {/* how it works */}
-        <section id="how" className="scroll-mt-8 border-t border-border py-14">
-          <h2 className="mb-8 text-sm font-semibold uppercase tracking-[0.16em] text-sub">
-            One agent, three jobs off your plate
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-3">
-            <Step
-              n="01"
-              title="Reconstruct the context"
-              body="st·eve reads every note, email, and Slack thread on the account and rebuilds where the deal actually stands — not where the CRM says it does."
-            />
-            <Step
-              n="02"
-              title="Draft the busywork"
-              body="A Salesforce-ready weekly summary and a Slack update for the account channel, written from the timeline, with every claim cited back to a real activity."
-            />
-            <Step
-              n="03"
-              title="Call the next move"
-              body="Prioritized next steps with owners and due dates, so you walk into every call knowing exactly what has to happen next."
-            />
           </div>
         </section>
       </main>
@@ -164,16 +141,6 @@ function BriefCard() {
 function Cite({ children }: { children: React.ReactNode }) {
   return (
     <sup className="rounded bg-accent-soft px-1 text-[10px] font-semibold text-accent">[{children}]</sup>
-  );
-}
-
-function Step({ n, title, body }: { n: string; title: string; body: string }) {
-  return (
-    <div className="flex flex-col gap-2 rounded-[var(--radius)] border border-border bg-surface p-5">
-      <span className="font-mono text-xs text-accent">{n}</span>
-      <h3 className="text-base font-semibold">{title}</h3>
-      <p className="text-sm leading-relaxed text-sub">{body}</p>
-    </div>
   );
 }
 

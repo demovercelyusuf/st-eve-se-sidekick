@@ -13,10 +13,14 @@ import type { Priority, Stage } from "@/lib/domain";
 
 export function AccountBrief({
   accountId,
+  accountName,
+  seName,
   gatewayReady,
   initialBrief,
 }: {
   accountId: string;
+  accountName: string;
+  seName?: string | null;
   gatewayReady: boolean;
   initialBrief: Brief | null;
 }) {
@@ -58,7 +62,7 @@ export function AccountBrief({
       {showStream ? (
         <StreamingBrief object={object} live={isLoading} />
       ) : initialBrief ? (
-        <BriefView brief={initialBrief} accountId={accountId} />
+        <BriefView brief={initialBrief} accountId={accountId} accountName={accountName} seName={seName} />
       ) : null}
     </div>
   );
