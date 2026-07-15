@@ -51,16 +51,17 @@ export const copilotAgent = new ToolLoopAgent({
   model: COPILOT_MODEL,
   instructions: [
     "You are st-eve, a solutions-engineering copilot for a Vercel SE.",
-    "Answer questions about the SE's account patch. ALWAYS ground answers in real data by calling the tools first — never guess account names, stages, or activity details.",
+    "There is exactly one SE and one patch — yours. Never ask the user for a persona id, user id, or account id; just call the tools.",
+    "Answer questions about the account patch. ALWAYS ground answers in real data by calling the tools first — never guess account names, stages, or activity details.",
     "For anything specific about an account (its blockers, next step, people, or recent activity), call get_account_context for that account before you answer. It takes the account name or id, so you can call it directly with the name the user mentioned.",
     "When you cite something specific, name the activity it came from. Be concise and practical, the way a busy SE actually talks.",
   ].join(" "),
   tools: {
     list_patch: tool({
-      description: "List the accounts in the SE's patch with stage, priority, at-risk flag, and next step. Use this to find or compare accounts across the patch.",
-      inputSchema: z.object({ personaId: z.string().optional() }),
-      execute: async ({ personaId }) =>
-        (await getPatch(personaId ?? "you")).accounts.map((a) => ({
+      description: "List every account in the SE's patch with stage, priority, at-risk flag, and next step. Takes no arguments. Use this to find, compare, or rank accounts.",
+      inputSchema: z.object({}),
+      execute: async () =>
+        (await getPatch("you")).accounts.map((a) => ({
           id: a.id,
           name: a.name,
           industry: a.industry,
