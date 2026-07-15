@@ -66,6 +66,14 @@ export function TourButton({ className = "" }: { className?: string }) {
   );
 }
 
+// Find the visible element for a tour selector. A target like the nav lives in two places on the
+// page (the hidden desktop sidebar and the visible mobile hamburger); pick whichever is shown.
+function visibleTarget(selector?: string): HTMLElement | null {
+  if (!selector) return null;
+  const els = Array.from(document.querySelectorAll<HTMLElement>(selector));
+  return els.find((e) => e.getBoundingClientRect().width > 0) ?? els[0] ?? null;
+}
+
 export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
   // `active` only ever flips true from a client effect / user event, so the portal never renders
   // during SSR — no separate "mounted" guard needed.
@@ -98,7 +106,7 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
 
   // Read the target's box only — no scrolling here, so the user can scroll freely during a step.
   const measure = useCallback(() => {
-    const el = step?.target ? (document.querySelector(step.target) as HTMLElement | null) : null;
+    const el = visibleTarget(step?.target);
     if (!el) return setRect((r) => (r === null ? r : null));
     const r = el.getBoundingClientRect();
     // getBoundingClientRect returns a fresh object each call — only update when the box moved.
@@ -113,7 +121,7 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
   // locked scrolling. Then re-measure a couple of times as the smooth scroll settles.
   useEffect(() => {
     if (!active) return;
-    const el = step?.target ? (document.querySelector(step.target) as HTMLElement | null) : null;
+    const el = visibleTarget(step?.target);
     el?.scrollIntoView({ block: "center", behavior: "smooth" });
     measure();
     const t1 = setTimeout(measure, 300);
@@ -167,6 +175,7 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
   const pad = 8;
   const vh = window.innerHeight;
   const vw = window.innerWidth;
+  const cardW = Math.min(CARD_W, vw - 28); // never wider than the screen
   const CARD_H = 240; // estimate, just for keeping the card on-screen
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(v, hi));
 
@@ -174,9 +183,9 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
   // near the bottom (for targets taller than the viewport). Centered when there's no target.
   let card: React.CSSProperties;
   if (!rect) {
-    card = { left: (vw - CARD_W) / 2, top: Math.max(20, (vh - CARD_H) / 2) };
+    card = { left: (vw - cardW) / 2, top: Math.max(20, (vh - CARD_H) / 2) };
   } else {
-    const left = clamp(rect.left + rect.width / 2 - CARD_W / 2, 14, vw - CARD_W - 14);
+    const left = clamp(rect.left + rect.width / 2 - cardW / 2, 14, vw - cardW - 14);
     let top: number;
     if (rect.bottom + 14 + CARD_H < vh) top = rect.bottom + 14;
     else if (rect.top - 14 - CARD_H > 0) top = rect.top - 14 - CARD_H;
@@ -211,7 +220,7 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
       )}
 
       <div
-        style={{ position: "fixed", width: CARD_W, ...card, transition: "left 0.2s ease, top 0.2s ease" }}
+        style={{ position: "fixed", width: cardW, ...card, transition: "left 0.2s ease, top 0.2s ease" }}
         className="pointer-events-auto z-[71] rounded-[calc(var(--radius)+4px)] border border-border bg-surface p-5 text-ink shadow-2xl"
       >
           <button

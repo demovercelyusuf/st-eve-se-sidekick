@@ -27,6 +27,7 @@ export function MobileNav() {
         type="button"
         aria-label="Open menu"
         aria-expanded={open}
+        data-tour="nav"
         onClick={() => setOpen(true)}
         className="grid size-9 place-items-center rounded-[var(--radius)] text-ink hover:bg-accent-soft/60 lg:hidden"
       >
