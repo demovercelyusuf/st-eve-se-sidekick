@@ -4,13 +4,18 @@ import { revalidatePath } from "next/cache";
 import { generateBrief } from "@/agent/generate-brief";
 import {
   createAccount,
+  createActivity,
+  createTodo,
   deleteAccount,
+  deleteTodo,
   getAccount,
   getLatestBrief,
+  toggleTodo,
   updateAccount,
   type AccountPatch,
   type NewAccount,
 } from "@/data/repository";
+import type { Activity } from "@/db/schema";
 import { salesforce } from "@/adapters/salesforce";
 import { slack } from "@/adapters/slack";
 import { runEvals } from "@/agent/eval";
@@ -64,4 +69,30 @@ export async function deleteAccountAction(id: string) {
   await deleteAccount(id);
   revalidatePath("/");
   revalidatePath("/board");
+}
+
+// ---- activities + to-dos ----
+
+export async function addActivityAction(
+  accountId: string,
+  input: { kind: Activity["kind"]; summary: string; body: string },
+) {
+  await createActivity({ accountId, ...input });
+  revalidatePath(`/accounts/${accountId}`);
+}
+
+export async function addTodoAction(accountId: string, text: string) {
+  const row = await createTodo(accountId, text);
+  revalidatePath(`/accounts/${accountId}`);
+  return row ? { id: row.id, text: row.text, done: row.done, priority: row.priority, due: row.due } : null;
+}
+
+export async function toggleTodoAction(accountId: string, id: string, done: boolean) {
+  await toggleTodo(id, done);
+  revalidatePath(`/accounts/${accountId}`);
+}
+
+export async function deleteTodoAction(accountId: string, id: string) {
+  await deleteTodo(id);
+  revalidatePath(`/accounts/${accountId}`);
 }

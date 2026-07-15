@@ -9,9 +9,11 @@ import {
   personas,
   todos,
   type Account,
+  type Activity,
   type Brief,
   type EvalRun,
   type Persona,
+  type Todo,
 } from "@/db/schema";
 import { ACCOUNTS, ACTIVITIES, CONTACTS, PERSONAS } from "@/lib/seed";
 import { ensureSeeded } from "@/data/provision";
@@ -230,4 +232,55 @@ export async function deleteAccount(id: string): Promise<void> {
   await db.delete(contacts).where(eq(contacts.accountId, id));
   await db.delete(todos).where(eq(todos.accountId, id));
   await db.delete(accounts).where(eq(accounts.id, id));
+}
+
+// ---- activities (append-only; logging a touchpoint) ----
+
+export async function createActivity(input: {
+  accountId: string;
+  kind: Activity["kind"];
+  summary: string;
+  body: string;
+  source?: string;
+}): Promise<Activity | null> {
+  if (!hasDb || !db) return null;
+  const id = `${input.accountId}-a-${crypto.randomUUID().slice(0, 6)}`;
+  const [row] = await db
+    .insert(activities)
+    .values({
+      id,
+      accountId: input.accountId,
+      kind: input.kind,
+      summary: input.summary,
+      body: input.body,
+      source: input.source ?? "logged by you",
+      occurredAt: new Date(),
+    })
+    .returning();
+  return row ?? null;
+}
+
+// ---- to-dos (the SE's own checklist per account) ----
+
+export function getTodos(accountId: string): Promise<Todo[]> {
+  return readDb(
+    () => db!.select().from(todos).where(eq(todos.accountId, accountId)).orderBy(desc(todos.createdAt)),
+    () => [], // to-dos are user data, never seeded — seed mode simply has none
+  );
+}
+
+export async function createTodo(accountId: string, text: string): Promise<Todo | null> {
+  if (!hasDb || !db) return null;
+  const [row] = await db.insert(todos).values({ accountId, text }).returning();
+  return row ?? null;
+}
+
+export async function toggleTodo(id: string, done: boolean): Promise<void> {
+  if (!hasDb || !db) return;
+  await db.update(todos).set({ done }).where(eq(todos.id, id));
+}
+
+export async function deleteTodo(id: string): Promise<void> {
+  if (!hasDb || !db) return;
+  await db.delete(todos).where(eq(todos.id, id));
 }
