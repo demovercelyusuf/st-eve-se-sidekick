@@ -21,12 +21,6 @@ export default async function Landing() {
           ST<span className="text-accent">•</span>EVE
         </span>
         <nav className="flex items-center gap-5">
-          <a href="#how" className="hidden text-sm font-medium text-sub transition-colors hover:text-ink sm:inline">
-            How it works
-          </a>
-          <a href="#roadmap" className="hidden text-sm font-medium text-sub transition-colors hover:text-ink sm:inline">
-            Roadmap
-          </a>
           <ThemeSwitcher initial={theme} />
           <Link
             href="/app"
