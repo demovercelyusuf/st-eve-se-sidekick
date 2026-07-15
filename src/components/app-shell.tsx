@@ -30,7 +30,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <p className="mb-2 px-2 text-[11px] font-semibold tracking-wide text-sub">WORKSPACE</p>
           <SidebarNav />
         </aside>
-        <main className="flex-1 p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-6">{children}</main>
       </div>
     </div>
   );
