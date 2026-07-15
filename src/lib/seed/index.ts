@@ -2,7 +2,7 @@ import type { Account, Activity, Contact, Persona } from "@/db/schema";
 
 // Bump this whenever the seed data changes — the DB compares it against what it has loaded and
 // truncates + reloads when they differ. Dated + named so the history reads clearly.
-export const SEED_VERSION = "2026-07-15-se-identity-4";
+export const SEED_VERSION = "2026-07-15-am-initials-5";
 
 // The SE whose patch this is. One patch today; the persona id stays on every account so a
 // multi-SE switcher is a drop-in later. The name is the SE's own — it signs the Slack updates

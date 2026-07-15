@@ -10,6 +10,7 @@ import {
   type Account,
   type Activity,
   type Brief,
+  type Contact,
   type Persona,
   type Todo,
 } from "@/db/schema";
@@ -261,6 +262,43 @@ export async function toggleTodo(id: string, done: boolean): Promise<void> {
 export async function deleteTodo(id: string): Promise<void> {
   if (!hasDb || !db) return;
   await db.delete(todos).where(eq(todos.id, id));
+}
+
+// ---- contacts (the buying committee on an account) ----
+
+export type ContactPatch = Partial<Pick<Contact, "name" | "title" | "relationship" | "sentiment">>;
+
+export async function createContact(input: {
+  accountId: string;
+  name: string;
+  title: string;
+  relationship?: Contact["relationship"];
+  sentiment?: Contact["sentiment"];
+}): Promise<Contact | null> {
+  if (!hasDb || !db) return null;
+  const id = `${input.accountId}-c-${crypto.randomUUID().slice(0, 6)}`;
+  const [row] = await db
+    .insert(contacts)
+    .values({
+      id,
+      accountId: input.accountId,
+      name: input.name,
+      title: input.title,
+      relationship: input.relationship ?? "influencer",
+      sentiment: input.sentiment ?? "neutral",
+    })
+    .returning();
+  return row ?? null;
+}
+
+export async function updateContact(id: string, patch: ContactPatch): Promise<void> {
+  if (!hasDb || !db) return;
+  await db.update(contacts).set(patch).where(eq(contacts.id, id));
+}
+
+export async function deleteContact(id: string): Promise<void> {
+  if (!hasDb || !db) return;
+  await db.delete(contacts).where(eq(contacts.id, id));
 }
 
 // ---- profile (the SE persona itself) ----

@@ -5,17 +5,22 @@ import { generateBrief } from "@/agent/generate-brief";
 import {
   createAccount,
   createActivity,
+  createContact,
   createTodo,
   deleteAccount,
+  deleteContact,
   deleteTodo,
   getAccount,
   getLatestBrief,
   toggleTodo,
   updateAccount,
+  updateContact,
   updatePersona,
   type AccountPatch,
+  type ContactPatch,
   type NewAccount,
 } from "@/data/repository";
+import type { Contact } from "@/db/schema";
 import { resetDemo } from "@/data/provision";
 import type { Activity } from "@/db/schema";
 import { slack } from "@/adapters/slack";
@@ -91,6 +96,29 @@ export async function toggleTodoAction(accountId: string, id: string, done: bool
 
 export async function deleteTodoAction(accountId: string, id: string) {
   await deleteTodo(id);
+  revalidatePath(`/accounts/${accountId}`);
+}
+
+// ---- contacts ----
+
+export async function addContactAction(
+  accountId: string,
+  input: { name: string; title: string; relationship?: Contact["relationship"] },
+) {
+  const row = await createContact({ accountId, ...input });
+  revalidatePath(`/accounts/${accountId}`);
+  return row
+    ? { id: row.id, name: row.name, title: row.title, relationship: row.relationship, sentiment: row.sentiment }
+    : null;
+}
+
+export async function updateContactAction(accountId: string, id: string, patch: ContactPatch) {
+  await updateContact(id, patch);
+  revalidatePath(`/accounts/${accountId}`);
+}
+
+export async function deleteContactAction(accountId: string, id: string) {
+  await deleteContact(id);
   revalidatePath(`/accounts/${accountId}`);
 }
 
