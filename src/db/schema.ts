@@ -12,10 +12,10 @@ import {
 } from "drizzle-orm/pg-core";
 
 /*
- * The st-eve data model. Static account context (accounts, contacts, activities) is
- * synthetic and seeded; the dynamic stuff st-eve produces (briefs) is what
- * really earns its keep in the DB. One opportunity per account, so its fields (stage,
- * priority, close target) just live on the account — no separate table to join.
+ * The st-eve data model. Account context (accounts, contacts, activities) is born from the
+ * in-repo seed but persists and is editable in Neon, alongside the briefs st-eve generates and
+ * the SE's to-dos. One opportunity per account, so its fields (stage, priority, close target)
+ * just live on the account — no separate table to join.
  */
 
 // The path to a technical win, in order. `stage` is the labeled truth we show in the UI;
@@ -127,7 +127,7 @@ export const briefs = pgTable("briefs", {
   nextSteps: jsonb("next_steps").$type<NextStep[]>().notNull(),
   citations: jsonb("citations").$type<Citation[]>().notNull(),
   grounded: boolean("grounded").notNull(), // did every claim resolve to a real activity?
-  meta: jsonb("meta").$type<{ model: string; latencyMs: number; tokens: number }>(),
+  meta: jsonb("meta").$type<{ model: string; latencyMs: number }>(),
 });
 
 // A lightweight to-do per account — the SE's own checklist, separate from the agent's

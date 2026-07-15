@@ -4,7 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useState } from "react";
 
-type Focus = { id: string; name: string };
+type Focus = { name: string };
 
 function suggestionsFor(focus?: Focus): string[] {
   const base = [

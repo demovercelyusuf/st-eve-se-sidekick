@@ -23,7 +23,8 @@ import { isWin, type Priority, type Stage } from "@/lib/domain";
  * lives in Neon so it's editable and persists — but it's *born* from the in-repo seed, which is
  * still the canonical demo state and the eval's pinned ground truth. Reads self-heal: the first
  * one provisions + seeds an empty database, and any DB error falls back to the seed so a hiccup
- * degrades to read-only instead of a 500. Generated artifacts (briefs, eval runs) persist too.
+ * degrades to read-only instead of a 500. Generated briefs persist too; the Patch Health eval is
+ * computed in memory over the seed and never touches the DB.
  */
 
 const PRIORITY_RANK: Record<Priority, number> = { high: 0, medium: 1, low: 2 };

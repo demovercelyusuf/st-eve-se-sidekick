@@ -86,7 +86,7 @@ export async function addActivityAction(
 export async function addTodoAction(accountId: string, text: string) {
   const row = await createTodo(accountId, text);
   revalidatePath(`/accounts/${accountId}`);
-  return row ? { id: row.id, text: row.text, done: row.done, priority: row.priority, due: row.due } : null;
+  return row ? { id: row.id, text: row.text, done: row.done } : null;
 }
 
 export async function toggleTodoAction(accountId: string, id: string, done: boolean) {

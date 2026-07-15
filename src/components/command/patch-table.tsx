@@ -278,7 +278,7 @@ function AddAccountForm({ onCancel, onAdded }: { onCancel: () => void; onAdded: 
     const id = await addAccountAction(input);
     setBusy(false);
     if (id) onAdded({ id, atRisk: false, touchLabel: "just now", ...input });
-    else onCancel(); // no DB (seed mode) — nothing persisted
+    else onCancel(); // insert returned no id (DB error) — close without adding a phantom row
   }
 
   const field = "rounded-[var(--radius)] border border-border bg-bg px-2 py-1.5 text-sm outline-none focus:border-accent";

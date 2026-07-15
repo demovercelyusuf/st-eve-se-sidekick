@@ -70,7 +70,7 @@ export default async function Landing() {
       </main>
 
       {/* footer + roadmap */}
-      <footer id="roadmap" className="scroll-mt-8 border-t border-border">
+      <footer className="border-t border-border">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-col gap-2">
             <span className="text-base font-bold tracking-tight">
@@ -94,8 +94,8 @@ export default async function Landing() {
   );
 }
 
-// A static replica of a real st·eve brief — same shape and tokens as the in-app BriefView, so the
-// landing shows the actual output, not a marketing abstraction of it.
+// A hand-authored static replica of an st·eve brief — same shape and tokens as the in-app
+// BriefView, so the landing shows the real output format (illustrative content, not generated).
 function BriefCard() {
   return (
     <div className="rounded-[calc(var(--radius)+6px)] border border-border bg-surface p-6 shadow-xl">

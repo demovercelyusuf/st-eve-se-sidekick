@@ -1,13 +1,11 @@
-import { generateText, Output } from "ai";
 import type { Account, Activity, Brief, Contact, NextStep } from "@/db/schema";
 import { getAccount, saveBrief } from "@/data/repository";
 import { SEED_ANCHOR } from "@/lib/seed/accounts";
 import { relativeTime } from "@/lib/ui";
-import { briefSchema, type BriefOutput } from "./brief-schema";
-import { GENERATION_MODEL, gatewayReady } from "./models";
+import { type BriefOutput } from "./brief-schema";
 
-// Either the live account context (from the DB) or the pinned seed context — the eval passes the
-// latter so a scoring run always grades against the same ground truth, even after a user edits.
+// One account's full context for brief generation: the account facts, its people, and the
+// activity timeline the model has to ground every claim in.
 export type AccountContext = { account: Account; contacts: Contact[]; activities: Activity[] };
 
 export function buildPrompt(account: Account, contacts: Contact[], activities: Activity[]): string {
@@ -63,7 +61,6 @@ export function finalizeBrief(
   ctx: AccountContext,
   model: string,
   latencyMs: number,
-  tokens = 0,
 ) {
   const validIds = new Set(ctx.activities.map((a) => a.id));
   const cited = [...output.citations.map((c) => c.activityId), ...output.nextSteps.flatMap((s) => s.citations)];
@@ -83,46 +80,24 @@ export function finalizeBrief(
     nextSteps,
     citations,
     grounded,
-    meta: { model, latencyMs, tokens },
+    meta: { model, latencyMs },
   };
 }
 
-// Generate + validate a brief but don't persist it — the eval leans on this so a scoring run
-// doesn't fill the store with throwaway briefs. The account detail page streams instead (see the
-// /api/brief route); this stays the non-streaming path for the eval and the no-gateway fallback.
-export async function composeBrief(accountId: string, ctx?: AccountContext) {
-  const context = ctx ?? (await getAccount(accountId));
+// Compose + validate the deterministic brief without persisting. The account detail page streams
+// the real brief through /api/brief (Sonnet 5); this is the model-free path the button falls back
+// to when there's no AI Gateway — weak, but it keeps the flow working and honest about running
+// without a model.
+export async function composeBrief(accountId: string) {
+  const context = await getAccount(accountId);
   if (!context) throw new Error(`unknown account: ${accountId}`);
 
   const started = Date.now();
-  let output: BriefOutput;
-  let model: string;
-  let tokens = 0;
-
-  if (gatewayReady) {
-    try {
-      const res = await generateText({
-        model: GENERATION_MODEL,
-        output: Output.object({ schema: briefSchema }),
-        prompt: buildPrompt(context.account, context.contacts, context.activities),
-      });
-      output = res.output;
-      model = GENERATION_MODEL;
-      tokens = res.usage?.totalTokens ?? 0;
-    } catch (err) {
-      console.error("[brief] gateway generation failed, using fallback:", err);
-      output = fallbackBrief(context.account, context.activities);
-      model = "fallback (gateway error)";
-    }
-  } else {
-    output = fallbackBrief(context.account, context.activities);
-    model = "fallback (no AI Gateway)";
-  }
-
-  return finalizeBrief(accountId, output, context, model, Date.now() - started, tokens);
+  const output = fallbackBrief(context.account, context.activities);
+  return finalizeBrief(accountId, output, context, "fallback (no AI Gateway)", Date.now() - started);
 }
 
-// Compose + persist — the no-gateway fallback path the button calls when there's no streaming.
+// Compose + persist — what the button calls when there's no gateway to stream from.
 export async function generateBrief(accountId: string): Promise<Brief> {
   return saveBrief(await composeBrief(accountId));
 }

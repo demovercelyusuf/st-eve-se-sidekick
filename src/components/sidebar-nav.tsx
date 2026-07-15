@@ -17,7 +17,7 @@ export function SidebarNav() {
   return (
     <nav className="flex flex-col gap-1">
       {ITEMS.map((item) => {
-        // keep the Command Center exact; everything else matches its subtree, so /accounts/acme still lights up Accounts
+        // Command Center matches exactly (it's just /app); every other item matches its subtree.
         const active = item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
         return (
           <Link
