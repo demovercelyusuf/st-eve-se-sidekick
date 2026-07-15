@@ -15,7 +15,7 @@ function Item({ title, body }: { title: string; body: string }) {
 export default function EvalsPage() {
   return (
     <AppShell>
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         <div className="flex min-w-0 flex-1 flex-col gap-5">
           <header>
             <h1 className="text-xl font-bold">Patch health</h1>
@@ -26,7 +26,7 @@ export default function EvalsPage() {
           <PatchHealthPanel />
         </div>
 
-        <aside className="flex w-72 shrink-0 flex-col gap-5">
+        <aside className="flex w-full shrink-0 flex-col gap-5 lg:w-72">
           <div>
             <p className="mb-2 text-[11px] font-semibold text-sub">WHAT ST·EVE CHECKS</p>
             <div className="flex flex-col gap-3">

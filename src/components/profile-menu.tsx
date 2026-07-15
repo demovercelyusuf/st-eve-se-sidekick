@@ -3,8 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { updateProfileAction } from "@/app/actions";
 
+function initials(name: string): string {
+  return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+}
+
 // The identity chip in the top bar, now a real menu: rename yourself and see which AMs you're
-// aligned to across the patch.
+// aligned to across the patch. Collapses to an initials avatar on small screens.
 export function ProfileMenu({
   name,
   accountCount,
@@ -49,16 +53,20 @@ export function ProfileMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full bg-muted-soft px-3 py-1.5 text-[13px] hover:bg-muted-soft/70"
+        aria-label="Profile"
+        className="flex items-center gap-2 rounded-full text-[13px] sm:bg-muted-soft sm:px-3 sm:py-1.5 sm:hover:bg-muted-soft/70"
       >
-        <span className="font-medium">SE: {display}</span>
-        <span className="text-sub">
+        <span className="grid size-8 place-items-center rounded-full bg-accent-soft text-[11px] font-semibold text-accent sm:hidden">
+          {initials(display)}
+        </span>
+        <span className="hidden font-medium sm:inline">SE: {display}</span>
+        <span className="hidden text-sub md:inline">
           {ams.length} AM patches · {accountCount} accounts
         </span>
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-72 rounded-[var(--radius)] border border-border bg-surface p-4 shadow-lg">
+        <div className="absolute right-0 z-20 mt-2 w-[min(18rem,calc(100vw-2rem))] rounded-[var(--radius)] border border-border bg-surface p-4 shadow-lg">
           <p className="mb-1 text-[11px] font-semibold text-sub">YOUR NAME</p>
           <input
             value={display}

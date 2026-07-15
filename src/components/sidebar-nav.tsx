@@ -11,7 +11,7 @@ const ITEMS = [
   { href: "/integrations", label: "Integrations" },
 ];
 
-export function SidebarNav() {
+export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -23,8 +23,9 @@ export function SidebarNav() {
           <Link
             key={item.href}
             href={item.href}
+            onClick={onNavigate}
             aria-current={active ? "page" : undefined}
-            className={`rounded-[var(--radius)] px-2.5 py-2 text-sm transition-colors ${
+            className={`rounded-[var(--radius)] px-3 py-2.5 text-sm transition-colors ${
               active
                 ? "bg-accent-soft font-semibold text-accent"
                 : "text-ink hover:bg-accent-soft/60"

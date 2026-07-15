@@ -23,7 +23,6 @@ export type PatchRowData = {
 };
 
 const PRIORITIES: Priority[] = ["high", "medium", "low"];
-const COL = "flex items-center gap-4 px-4 py-3";
 const FILTER = "rounded-[var(--radius)] border border-border bg-surface px-2.5 py-1.5 text-sm outline-none focus:border-accent";
 
 export function PatchTable({ initial, canEdit }: { initial: PatchRowData[]; canEdit: boolean }) {
@@ -81,7 +80,7 @@ export function PatchTable({ initial, canEdit }: { initial: PatchRowData[]; canE
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search accounts + next steps…"
-          className={`${FILTER} w-64`}
+          className={`${FILTER} w-full sm:w-64`}
         />
         <select value={stage} onChange={(e) => setStage(e.target.value as Stage | "all")} className={FILTER}>
           <option value="all">All stages</option>
@@ -127,7 +126,7 @@ export function PatchTable({ initial, canEdit }: { initial: PatchRowData[]; canE
       </div>
 
       <div className="overflow-hidden rounded-[var(--radius)] border border-border bg-surface">
-        <div className={`${COL} bg-bg py-2.5 text-[11px] font-semibold text-sub`}>
+        <div className="hidden items-center gap-4 bg-bg px-4 py-2.5 text-[11px] font-semibold text-sub sm:flex">
           <span className="w-56 shrink-0">ACCOUNT</span>
           <span className="w-40 shrink-0">STAGE</span>
           <span className="w-24 shrink-0">PRIORITY</span>
@@ -138,20 +137,25 @@ export function PatchTable({ initial, canEdit }: { initial: PatchRowData[]; canE
         {filtered.map((r) => {
           const stageInfo = stageBadge(r.stage);
           return (
-            <div key={r.id} className={`${COL} border-t border-border hover:bg-accent-soft/30`}>
-              <Link href={`/accounts/${r.id}`} className="w-56 shrink-0">
+            <div
+              key={r.id}
+              className="flex flex-col gap-2 border-t border-border px-4 py-3 hover:bg-accent-soft/30 sm:flex-row sm:items-center sm:gap-4"
+            >
+              <Link href={`/accounts/${r.id}`} className="w-full sm:w-56 sm:shrink-0">
                 <div className="truncate text-sm font-semibold hover:underline">{r.name}</div>
                 <div className="truncate text-xs text-sub">
                   {r.industry} · {formatArr(r.arr)}
                 </div>
               </Link>
 
-              <div className="w-40 shrink-0">
-                <Pill tone={stageInfo.tone}>{stageInfo.label}</Pill>
-              </div>
+              {/* stage + priority: one line on mobile, separate aligned columns on desktop */}
+              <div className="flex items-center gap-2 sm:contents">
+                <div className="sm:w-40 sm:shrink-0">
+                  <Pill tone={stageInfo.tone}>{stageInfo.label}</Pill>
+                </div>
 
-              <div className="w-24 shrink-0">
-                {canEdit ? (
+                <div className="sm:w-24 sm:shrink-0">
+                  {canEdit ? (
                   <select
                     value={r.priority}
                     onChange={(e) => patch(r.id, { priority: e.target.value as Priority })}
@@ -167,9 +171,10 @@ export function PatchTable({ initial, canEdit }: { initial: PatchRowData[]; canE
                 ) : (
                   <Pill tone={priorityBadge(r.priority).tone}>{PRIORITY_LABEL[r.priority]}</Pill>
                 )}
+                </div>
               </div>
 
-              <div className="min-w-0 flex-1">
+              <div className="w-full min-w-0 sm:flex-1">
                 {editing === r.id ? (
                   <input
                     autoFocus
@@ -199,7 +204,7 @@ export function PatchTable({ initial, canEdit }: { initial: PatchRowData[]; canE
               </div>
 
               {canEdit && (
-                <div className="flex w-8 shrink-0 justify-end">
+                <div className="flex justify-end sm:w-8 sm:shrink-0">
                   {confirming === r.id ? (
                     <span className="flex items-center gap-1 text-xs">
                       <button type="button" onClick={() => remove(r.id)} className="font-semibold text-danger">

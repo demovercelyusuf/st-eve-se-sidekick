@@ -49,7 +49,7 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
 
   return (
     <AppShell>
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         <div className="flex min-w-0 flex-1 flex-col gap-5">
           <Link href="/app" className="text-sm font-medium text-accent">
             ‹ Your patch
@@ -90,7 +90,7 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
           <AccountPanels accountId={account.id} canEdit={hasDb} activities={activityRows} todos={todoRows} />
         </div>
 
-        <aside className="flex w-80 shrink-0 flex-col gap-5">
+        <aside className="flex w-full shrink-0 flex-col gap-5 lg:w-80">
           <div>
             <p className="mb-2 text-[11px] font-semibold text-sub">ACCOUNT FACTS</p>
             <div className="flex flex-col gap-2 rounded-[var(--radius)] border border-border bg-bg p-3 text-sm">
