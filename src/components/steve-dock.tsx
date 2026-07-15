@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { hasAnswerText, thinkingLine } from "@/lib/copilot-status";
+import { track } from "@/lib/analytics";
 
 // st·eve, everywhere. A floating dock: the mascot waves with a greeting until you open it, then
 // it's a terminal-style chat with a model-router panel showing which model AI Gateway routed to
@@ -42,6 +43,7 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
   function send(text: string) {
     if (!text.trim() || !gatewayReady) return;
     sendMessage({ text });
+    track("steve_question_asked", { surface: "dock", route: pathname });
     setInput("");
   }
 
@@ -96,8 +98,8 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
   const shell = maximized
     ? "inset-3 sm:inset-6"
     : minimized
-      ? "bottom-3 left-3 right-3 sm:left-auto sm:right-5 sm:w-[min(46rem,calc(100vw-2.5rem))]"
-      : "bottom-3 left-3 right-3 h-[70dvh] sm:bottom-5 sm:left-auto sm:right-5 sm:h-[32rem] sm:w-[min(46rem,calc(100vw-2.5rem))]";
+      ? "bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 sm:left-auto sm:right-5 sm:w-[min(46rem,calc(100vw-2.5rem))]"
+      : "bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 h-[70dvh] sm:bottom-5 sm:left-auto sm:right-5 sm:h-[32rem] sm:w-[min(46rem,calc(100vw-2.5rem))]";
 
   return (
     <div
