@@ -46,6 +46,16 @@ const integrations: Integration[] = [
     tone: "muted",
     note: "Roadmap · Q4",
   },
+  {
+    id: "notion",
+    name: "Notion",
+    badge: "N",
+    desc: "Sync account notes and briefs to a Notion workspace, and pull meeting notes back into context.",
+    live: false,
+    status: "Coming soon",
+    tone: "muted",
+    note: "Roadmap · Q4",
+  },
 ];
 
 export default function IntegrationsPage() {
