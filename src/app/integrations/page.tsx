@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { Pill } from "@/components/ui/pill";
-import { slackConfigured } from "@/adapters/slack";
+import { slackChannel, slackConfigured } from "@/adapters/slack";
 import type { Tone } from "@/lib/ui";
 
 type Integration = {
@@ -8,38 +8,43 @@ type Integration = {
   name: string;
   badge: string;
   desc: string;
+  live: boolean; // working today vs. on the roadmap
   status: string;
   tone: Tone;
-  connected: boolean;
+  note?: string;
 };
 
+// Slack is the one real integration; the rest are honest about being roadmap.
 const integrations: Integration[] = [
-  {
-    id: "salesforce",
-    name: "Salesforce",
-    badge: "SF",
-    desc: "Opportunities, activities, and stages sync in; weekly summaries write back to the opportunity.",
-    status: "Mock",
-    tone: "muted",
-    connected: false,
-  },
   {
     id: "slack",
     name: "Slack",
     badge: "#",
-    desc: "Posts st-eve's Slack-friendly updates to the account team channel.",
-    status: slackConfigured ? "Connected" : "Not configured",
-    tone: slackConfigured ? "success" : "muted",
-    connected: slackConfigured,
+    desc: "st-eve posts your account updates straight to the channel via an Incoming Webhook.",
+    live: true,
+    status: slackConfigured ? "Connected" : "Setup needed",
+    tone: slackConfigured ? "success" : "warn",
+    note: slackConfigured ? `Posting to ${slackChannel}` : "Add SLACK_WEBHOOK_URL to connect your workspace",
+  },
+  {
+    id: "salesforce",
+    name: "Salesforce",
+    badge: "SF",
+    desc: "Sync opportunities, activities, and stages; write weekly summaries back to the opportunity.",
+    live: false,
+    status: "Coming soon",
+    tone: "muted",
+    note: "Roadmap · Q4",
   },
   {
     id: "calendar",
     name: "Google Calendar",
     badge: "GC",
     desc: "Pull upcoming meetings into account context and next steps.",
-    status: "Available",
+    live: false,
+    status: "Coming soon",
     tone: "muted",
-    connected: false,
+    note: "Roadmap · Q4",
   },
 ];
 
@@ -51,26 +56,29 @@ export default function IntegrationsPage() {
           <header>
             <p className="text-sm text-sub">Settings</p>
             <h1 className="text-xl font-bold">Integrations</h1>
-            <p className="text-sm text-sub">Connect your data sources — powered by Vercel Connect.</p>
+            <p className="text-sm text-sub">Connect your data sources.</p>
           </header>
 
           <div className="rounded-[var(--radius)] bg-accent-soft p-4">
             <div className="text-sm font-semibold text-accent">How st-eve connects</div>
             <p className="mt-1 text-[13px] leading-relaxed text-accent">
-              In this demo the adapters return seeded data. In production, Vercel Connect manages the
-              OAuth tokens for live Salesforce &amp; Slack — the same tool code talks to the real APIs
-              with one env flip, and tokens never touch the repo.
+              Slack is live via an Incoming Webhook — st-eve posts your updates straight to the
+              channel, and the URL lives in an env var, never in the repo. Salesforce and Calendar
+              are on the Q4 roadmap; they&apos;ll connect through Vercel Connect, so the platform
+              manages the OAuth tokens and the same tool code talks to the real APIs.
             </p>
           </div>
 
           {integrations.map((it) => (
             <div
               key={it.id}
-              className="flex items-center gap-4 rounded-[var(--radius)] border border-border bg-surface p-4"
+              className={`flex items-center gap-4 rounded-[var(--radius)] border border-border bg-surface p-4 ${
+                it.live ? "" : "opacity-55"
+              }`}
             >
               <div
                 className={`grid size-11 shrink-0 place-items-center rounded-[var(--radius)] text-sm font-bold ${
-                  it.connected ? "bg-accent-soft text-accent" : "bg-muted-soft text-muted"
+                  it.status === "Connected" ? "bg-success-soft text-success" : "bg-muted-soft text-muted"
                 }`}
               >
                 {it.badge}
@@ -81,16 +89,8 @@ export default function IntegrationsPage() {
                   <Pill tone={it.tone}>{it.status}</Pill>
                 </div>
                 <p className="mt-0.5 text-[13px] text-sub">{it.desc}</p>
+                {it.note && <p className="mt-1 text-xs text-sub">{it.note}</p>}
               </div>
-              <button
-                className={`shrink-0 rounded-[var(--radius)] px-3.5 py-2 text-sm font-semibold ${
-                  it.connected
-                    ? "border border-border bg-surface"
-                    : "bg-accent text-accent-fg"
-                }`}
-              >
-                {it.connected ? "Manage" : "Connect"}
-              </button>
             </div>
           ))}
         </div>
@@ -99,7 +99,7 @@ export default function IntegrationsPage() {
           <div>
             <p className="mb-2 text-[11px] font-semibold text-sub">DATA st-eve READS</p>
             <div className="flex flex-col gap-1.5 text-sm">
-              {["Opportunities & stages", "Activities — notes, emails", "Slack threads", "Meetings (when connected)"].map(
+              {["Opportunities & stages", "Activities — notes, emails", "Slack threads", "Meetings — roadmap"].map(
                 (x) => (
                   <div key={x} className="flex items-center gap-2">
                     <span className="size-1.5 rounded-full bg-accent" />
@@ -112,8 +112,8 @@ export default function IntegrationsPage() {
           <div>
             <p className="mb-2 text-[11px] font-semibold text-sub">SECURITY</p>
             <div className="rounded-[var(--radius)] border border-border bg-bg p-3 text-[13px] leading-relaxed text-sub">
-              OAuth tokens are managed by Vercel Connect, and the Slack webhook lives in an env var —
-              never in the repo, env files that get committed, or the commit history.
+              The Slack webhook lives in a Sensitive env var, and the roadmap integrations will use
+              Vercel Connect — never in the repo, committed env files, or the commit history.
             </div>
           </div>
         </aside>

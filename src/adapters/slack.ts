@@ -8,6 +8,9 @@ const webhookUrl = process.env.SLACK_WEBHOOK_URL;
 
 export const slackConfigured = Boolean(webhookUrl);
 
+// Cosmetic — the webhook already targets a channel; this just lets the UI name it.
+export const slackChannel = process.env.SLACK_CHANNEL ?? "your workspace";
+
 export const slack: SlackAdapter = {
   async postUpdate({ accountName, text }) {
     if (!webhookUrl) {
