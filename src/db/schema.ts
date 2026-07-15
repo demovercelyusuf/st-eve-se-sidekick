@@ -169,6 +169,14 @@ export const todos = pgTable(
   (t) => [index("todos_account_idx").on(t.accountId)],
 );
 
+// One row recording which seed version is loaded. When the code's SEED_VERSION moves ahead of
+// what's in the DB, the app truncates and reloads from the seed — so editing the seed and
+// deploying is all it takes to refresh the demo data.
+export const seedMeta = pgTable("seed_meta", {
+  id: integer("id").primaryKey().default(1),
+  version: text("version").notNull(),
+});
+
 export type Persona = typeof personas.$inferSelect;
 export type Account = typeof accounts.$inferSelect;
 export type Contact = typeof contacts.$inferSelect;

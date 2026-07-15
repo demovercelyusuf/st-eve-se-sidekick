@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { db, hasDb } from "@/db/client";
-import { accounts, activities, contacts, personas } from "@/db/schema";
-import { ACCOUNTS, ACTIVITIES, CONTACTS, PERSONAS } from "@/lib/seed";
+import { accounts, activities, contacts, personas, seedMeta } from "@/db/schema";
+import { ACCOUNTS, ACTIVITIES, CONTACTS, PERSONAS, SEED_VERSION } from "@/lib/seed";
 
 /*
  * Getting the seed into Neon.
@@ -27,6 +27,7 @@ const DDL: string[] = [
   `CREATE TABLE IF NOT EXISTS "contacts" ("id" text PRIMARY KEY NOT NULL, "account_id" text NOT NULL, "name" text NOT NULL, "title" text NOT NULL, "relationship" "relationship" NOT NULL, "sentiment" "sentiment" NOT NULL);`,
   `CREATE TABLE IF NOT EXISTS "activities" ("id" text PRIMARY KEY NOT NULL, "account_id" text NOT NULL, "kind" "activity_kind" NOT NULL, "summary" text NOT NULL, "body" text NOT NULL, "source" text, "occurred_at" timestamptz NOT NULL);`,
   `CREATE TABLE IF NOT EXISTS "todos" ("id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL, "account_id" text NOT NULL, "text" text NOT NULL, "done" boolean DEFAULT false NOT NULL, "priority" "priority" DEFAULT 'medium' NOT NULL, "due" text, "created_at" timestamptz DEFAULT now() NOT NULL);`,
+  `CREATE TABLE IF NOT EXISTS "seed_meta" ("id" integer PRIMARY KEY DEFAULT 1, "version" text NOT NULL);`,
   `CREATE INDEX IF NOT EXISTS "accounts_persona_idx" ON "accounts" ("persona_id");`,
   `CREATE INDEX IF NOT EXISTS "contacts_account_idx" ON "contacts" ("account_id");`,
   `CREATE INDEX IF NOT EXISTS "activities_account_idx" ON "activities" ("account_id");`,
@@ -38,41 +39,50 @@ async function provisionSchema() {
   for (const stmt of DDL) await db.execute(sql.raw(stmt));
 }
 
-// onConflictDoNothing so two concurrent cold starts racing to seed can't double-insert.
-async function insertSeed() {
+// Wipe the account context (leaving generated briefs/eval-runs alone) and reload it from the
+// seed, then stamp the version. TRUNCATE has no FKs to fight, so order doesn't matter.
+async function reload() {
   if (!hasDb || !db) return;
-  await db.insert(personas).values(PERSONAS).onConflictDoNothing();
-  await db.insert(accounts).values(ACCOUNTS).onConflictDoNothing();
-  await db.insert(contacts).values(CONTACTS).onConflictDoNothing();
-  await db.insert(activities).values(ACTIVITIES).onConflictDoNothing();
+  await db.execute(sql.raw(`TRUNCATE "todos", "activities", "contacts", "accounts", "personas";`));
+  await db.insert(personas).values(PERSONAS);
+  await db.insert(accounts).values(ACCOUNTS);
+  await db.insert(contacts).values(CONTACTS);
+  await db.insert(activities).values(ACTIVITIES);
+  await db
+    .insert(seedMeta)
+    .values({ id: 1, version: SEED_VERSION })
+    .onConflictDoUpdate({ target: seedMeta.id, set: { version: SEED_VERSION } });
 }
 
-// Ensures the DB is provisioned and seeded, at most once per warm instance. Best-effort: if
-// anything fails we swallow it and let the repository's read fallback serve the seed instead,
-// so a DB hiccup degrades to read-only rather than a 500.
+// Ensures the DB is provisioned and holding the current seed, at most once per warm instance.
+// If the loaded version is behind the code's SEED_VERSION (or the DB is fresh), it re-provisions
+// and reloads. Best-effort: on any failure we stay unready so the next request retries, and the
+// repository's read fallback serves the seed in the meantime — a hiccup degrades to read-only.
 let ensured = false;
 export async function ensureSeeded() {
   if (!hasDb || !db || ensured) return;
   try {
-    const rows = await db.select({ id: accounts.id }).from(accounts).limit(1);
-    if (rows.length === 0) await insertSeed();
+    let loaded: string | null = null;
+    try {
+      const [row] = await db.select().from(seedMeta).limit(1);
+      loaded = row?.version ?? null;
+    } catch {
+      loaded = null; // seed_meta doesn't exist yet — first boot against this database
+    }
+    if (loaded !== SEED_VERSION) {
+      await provisionSchema();
+      await reload();
+    }
     ensured = true;
-  } catch {
-    // accounts table doesn't exist yet — first ever boot against this database. Provision then
-    // seed; only mark ready if both land, so a failure retries next request instead of stranding
-    // the app on an empty table.
-    await provisionSchema();
-    await insertSeed();
-    ensured = true;
+  } catch (err) {
+    console.error("[provision] ensureSeeded failed, staying on seed fallback:", err);
   }
 }
 
-// The "reset to demo" action: wipe the account context (leaving generated briefs/eval-runs) and
-// reload it from the seed. TRUNCATE has no FKs to fight, so order doesn't matter.
+// The explicit "reset to demo" action — same reload, forced.
 export async function resetDemo() {
   if (!hasDb || !db) return;
   await provisionSchema();
-  await db.execute(sql.raw(`TRUNCATE "todos", "activities", "contacts", "accounts", "personas";`));
-  await insertSeed();
+  await reload();
   ensured = true;
 }

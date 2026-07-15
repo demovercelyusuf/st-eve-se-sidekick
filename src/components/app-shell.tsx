@@ -20,7 +20,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <ThemeSwitcher initial={theme} />
           <div className="flex items-center gap-2 rounded-full bg-muted-soft px-3 py-1.5 text-[13px]">
             <span className="font-medium">SE: You</span>
-            <span className="text-sub">2 AM patches · 18 accounts</span>
+            <span className="text-sub">4 AM patches · 14 accounts</span>
           </div>
         </div>
       </header>
