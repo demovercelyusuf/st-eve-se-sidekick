@@ -4,7 +4,7 @@ import { getAccount, getPatch } from "@/data/repository";
 import { relativeTime } from "@/lib/ui";
 import { SEED_ANCHOR } from "@/lib/seed/accounts";
 import { type AccountContext } from "./generate-brief";
-import { GENERATION_MODEL } from "./models";
+import { COPILOT_MODEL } from "./models";
 
 // Shape one account's context into plain, JSON-safe fields for the model. Critically, NO Date
 // objects: handing a raw row's Date (`lastTouch` / `occurredAt`) back into the tool loop trips
@@ -48,7 +48,7 @@ export function accountContextView(ctx: AccountContext) {
  * agent can't make up an account or an activity, it has to fetch it.
  */
 export const copilotAgent = new ToolLoopAgent({
-  model: GENERATION_MODEL,
+  model: COPILOT_MODEL,
   instructions: [
     "You are st-eve, a solutions-engineering copilot for a Vercel SE.",
     "Answer questions about the SE's account patch. ALWAYS ground answers in real data by calling the tools first — never guess account names, stages, or activity details.",

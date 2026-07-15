@@ -3,6 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useState } from "react";
+import { hasAnswerText, thinkingLine } from "@/lib/copilot-status";
 
 type Focus = { name: string };
 
@@ -23,6 +24,11 @@ export function Copilot({ gatewayReady, focus }: { gatewayReady: boolean; focus?
   });
   const [input, setInput] = useState("");
   const busy = status === "submitted" || status === "streaming";
+
+  // A conversational "what I'm doing" line while st·eve works, until its actual reply starts.
+  const lastMsg = messages[messages.length - 1];
+  const answering = lastMsg?.role === "assistant" && hasAnswerText(lastMsg.parts);
+  const workingLine = busy && !answering ? thinkingLine(lastMsg?.role === "assistant" ? lastMsg.parts : []) : null;
 
   function send(text: string) {
     if (!text.trim() || !gatewayReady) return;
@@ -95,7 +101,7 @@ export function Copilot({ gatewayReady, focus }: { gatewayReady: boolean; focus?
               </div>
             ),
           )}
-          {busy && <div className="text-xs text-sub">st·eve is thinking…</div>}
+          {workingLine && <div className="text-sm text-accent">{workingLine}▍</div>}
           {error && <div className="text-xs text-danger">Something went wrong — {error.message}</div>}
         </div>
       </div>
