@@ -5,7 +5,7 @@ import { Pill } from "@/components/ui/pill";
 import { StageTracker } from "@/components/account/stage-tracker";
 import { AccountPanels, type ActivityRow, type TodoRow } from "@/components/account/account-panels";
 import { EditableAm } from "@/components/account/editable-am";
-import { getAccount, getLatestBrief, getTodos } from "@/data/repository";
+import { getAccount, getLatestBrief, getPersonas, getTodos } from "@/data/repository";
 import { hasDb } from "@/db/client";
 import type { Priority, Stage } from "@/lib/domain";
 import { formatArr, priorityBadge, relativeTime, stageBadge } from "@/lib/ui";
@@ -37,7 +37,8 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
   if (!data) notFound();
 
   const { account, contacts, activities } = data;
-  const [latestBrief, todos] = await Promise.all([getLatestBrief(id), getTodos(id)]);
+  const [latestBrief, todos, personas] = await Promise.all([getLatestBrief(id), getTodos(id), getPersonas()]);
+  const seName = personas.find((p) => p.id === "you")?.name;
 
   // Pre-format on the server so the client tab doesn't pull in the seed anchor.
   const activityRows: ActivityRow[] = activities.map((a) => ({
@@ -81,7 +82,13 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
             </Link>
           </div>
 
-          <AccountBrief accountId={account.id} gatewayReady={gatewayReady} initialBrief={latestBrief} />
+          <AccountBrief
+            accountId={account.id}
+            accountName={account.name}
+            seName={seName}
+            gatewayReady={gatewayReady}
+            initialBrief={latestBrief}
+          />
 
           <section className="rounded-[var(--radius)] border border-border bg-surface p-4">
             <h2 className="mb-3 text-sm font-semibold">Opportunity stage</h2>
