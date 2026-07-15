@@ -4,6 +4,8 @@ import { Geist, Poppins, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { DEFAULT_THEME, isThemeId, THEME_COOKIE } from "@/lib/themes";
 import { Analytics } from "@/components/analytics";
+import { SteveDock } from "@/components/steve-dock";
+import { gatewayReady } from "@/agent/models";
 
 // Load all three theme fonts up front, self-hosted — switching a theme shouldn't
 // re-fetch a font or shift the layout. Each theme just repoints --font-theme at one
@@ -42,7 +44,10 @@ export default async function RootLayout({
       className={`${geist.variable} ${poppins.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <Analytics>{children}</Analytics>
+        <Analytics>
+          {children}
+          <SteveDock gatewayReady={gatewayReady} />
+        </Analytics>
       </body>
     </html>
   );
