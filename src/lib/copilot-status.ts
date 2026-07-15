@@ -18,7 +18,7 @@ export function thinkingLine(parts: readonly MessagePart[]): string {
 
   const accounts = tools
     .filter((p) => p.type === "tool-get_account_context")
-    .map((p) => (p.input as { accountId?: string } | undefined)?.accountId)
+    .map((p) => (p.input as { account?: string } | undefined)?.account)
     .filter((x): x is string => Boolean(x))
     .map(pretty);
 

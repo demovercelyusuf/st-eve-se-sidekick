@@ -52,11 +52,12 @@ export const copilotAgent = new ToolLoopAgent({
   instructions: [
     "You are st-eve, a solutions-engineering copilot for a Vercel SE.",
     "Answer questions about the SE's account patch. ALWAYS ground answers in real data by calling the tools first — never guess account names, stages, or activity details.",
+    "For anything specific about an account (its blockers, next step, people, or recent activity), call get_account_context for that account before you answer. It takes the account name or id, so you can call it directly with the name the user mentioned.",
     "When you cite something specific, name the activity it came from. Be concise and practical, the way a busy SE actually talks.",
   ].join(" "),
   tools: {
     list_patch: tool({
-      description: "List the accounts in the SE's patch with stage, priority, at-risk flag, and next step. Use this to find or compare accounts.",
+      description: "List the accounts in the SE's patch with stage, priority, at-risk flag, and next step. Use this to find or compare accounts across the patch.",
       inputSchema: z.object({ personaId: z.string().optional() }),
       execute: async ({ personaId }) =>
         (await getPatch(personaId ?? "you")).accounts.map((a) => ({
@@ -71,11 +72,21 @@ export const copilotAgent = new ToolLoopAgent({
         })),
     }),
     get_account_context: tool({
-      description: "Get one account's full context: facts, contacts, and the activity timeline. Use before answering anything specific about an account.",
-      inputSchema: z.object({ accountId: z.string() }),
-      execute: async ({ accountId }) => {
-        const ctx = await getAccount(accountId);
-        if (!ctx) return { error: `no account with id "${accountId}"` };
+      description:
+        "Get one account's full context: facts, contacts, and the activity timeline. Pass the account's name or id (e.g. 'Stripe' or 'stripe'). Call this before answering anything specific about an account.",
+      inputSchema: z.object({ account: z.string().describe("account name or id, e.g. 'Stripe' or 'stripe'") }),
+      execute: async ({ account }) => {
+        const key = account.trim().toLowerCase();
+        // Try the id directly, then resolve a name (or a mis-cased id) against the patch — models
+        // often pass the display name, so the tool meets them there instead of erroring.
+        let ctx = await getAccount(key);
+        if (!ctx) {
+          const match = (await getPatch("you")).accounts.find(
+            (a) => a.id === key || a.name.toLowerCase() === key,
+          );
+          if (match) ctx = await getAccount(match.id);
+        }
+        if (!ctx) return { error: `no account matching "${account}" — call list_patch to see the exact ids` };
         return accountContextView(ctx);
       },
     }),
