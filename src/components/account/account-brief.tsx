@@ -7,6 +7,7 @@ import { Pill } from "@/components/ui/pill";
 import { priorityBadge, stageBadge } from "@/lib/ui";
 import { briefSchema } from "@/agent/brief-schema";
 import { generateBriefAction } from "@/app/actions";
+import { track } from "@/lib/analytics";
 import { BriefView } from "./brief-view";
 import type { Brief } from "@/db/schema";
 import type { Priority, Stage } from "@/lib/domain";
@@ -34,6 +35,11 @@ export function AccountBrief({
   const busy = isLoading || fallbackPending;
 
   function generate() {
+    track("brief_generated", {
+      account: accountName,
+      regenerate: Boolean(initialBrief),
+      path: gatewayReady ? "gateway" : "fallback",
+    });
     if (gatewayReady) submit({ accountId });
     else startFallback(async () => {
       await generateBriefAction(accountId);

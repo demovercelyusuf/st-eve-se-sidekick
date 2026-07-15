@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
+import { track } from "@/lib/analytics";
 
 // A self-guided coach-mark tour: spotlights a part of the app, explains it, and lets you click
 // through or skip. It auto-starts once for a first-time visitor (so the app demos itself when
@@ -153,8 +154,10 @@ export function ProductTour({ steps = APP_TOUR }: { steps?: TourStep[] }) {
     }
   }, []);
   const next = useCallback(() => {
-    if (i >= steps.length - 1) close();
-    else setI(i + 1);
+    if (i >= steps.length - 1) {
+      track("tour_completed", { steps: steps.length });
+      close();
+    } else setI(i + 1);
   }, [i, steps.length, close]);
   const back = useCallback(() => setI((n) => Math.max(0, n - 1)), []);
 

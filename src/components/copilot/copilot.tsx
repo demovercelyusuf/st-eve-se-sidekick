@@ -4,6 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useState } from "react";
 import { hasAnswerText, thinkingLine } from "@/lib/copilot-status";
+import { track } from "@/lib/analytics";
 
 type Focus = { name: string };
 
@@ -33,6 +34,7 @@ export function Copilot({ gatewayReady, focus }: { gatewayReady: boolean; focus?
   function send(text: string) {
     if (!text.trim() || !gatewayReady) return;
     sendMessage({ text });
+    track("steve_question_asked", { surface: "page", focus: focus?.name });
     setInput("");
   }
 
