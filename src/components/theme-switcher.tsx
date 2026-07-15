@@ -13,7 +13,7 @@ export function ThemeSwitcher({ initial }: { initial: ThemeId }) {
 
   function pick(id: ThemeId) {
     setActive(id);
-    document.documentElement.dataset.theme = id;
+    document.documentElement.dataset.theme = id; // imperative re-skin — see eslint config note
     // keep it for a year; the server reads this on the next load
     document.cookie = `${THEME_COOKIE}=${id}; path=/; max-age=31536000; samesite=lax`;
   }

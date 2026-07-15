@@ -3,7 +3,43 @@ import { z } from "zod";
 import { getAccount, getPatch } from "@/data/repository";
 import { relativeTime } from "@/lib/ui";
 import { SEED_ANCHOR } from "@/lib/seed/accounts";
+import { type AccountContext } from "./generate-brief";
 import { GENERATION_MODEL } from "./models";
+
+// Shape one account's context into plain, JSON-safe fields for the model. Critically, NO Date
+// objects: handing a raw row's Date (`lastTouch` / `occurredAt`) back into the tool loop trips
+// serialization and kills the stream. Timestamps become the same relative labels the UI shows.
+export function accountContextView(ctx: AccountContext) {
+  const a = ctx.account;
+  return {
+    account: {
+      id: a.id,
+      name: a.name,
+      industry: a.industry,
+      arr: a.arr,
+      stage: a.stage,
+      priority: a.priority,
+      atRisk: a.atRisk,
+      nextStep: a.nextStep,
+      closeTarget: a.closeTarget,
+      amName: a.amName,
+      lastTouch: relativeTime(a.lastTouch, SEED_ANCHOR),
+    },
+    contacts: ctx.contacts.map((c) => ({
+      name: c.name,
+      title: c.title,
+      relationship: c.relationship,
+      sentiment: c.sentiment,
+    })),
+    activities: ctx.activities.map((act) => ({
+      id: act.id,
+      kind: act.kind,
+      when: relativeTime(act.occurredAt, SEED_ANCHOR),
+      summary: act.summary,
+      body: act.body,
+    })),
+  };
+}
 
 /*
  * The conversational side of st-eve. Same brain, different surface: instead of one-shot
@@ -40,38 +76,7 @@ export const copilotAgent = new ToolLoopAgent({
       execute: async ({ accountId }) => {
         const ctx = await getAccount(accountId);
         if (!ctx) return { error: `no account with id "${accountId}"` };
-        const a = ctx.account;
-        // Return plain, JSON-safe fields only — the raw DB row carries a `lastTouch` Date, and
-        // handing Date objects back to the model loop trips serialization. Format timestamps to
-        // the same relative labels the UI uses; they read better for the agent anyway.
-        return {
-          account: {
-            id: a.id,
-            name: a.name,
-            industry: a.industry,
-            arr: a.arr,
-            stage: a.stage,
-            priority: a.priority,
-            atRisk: a.atRisk,
-            nextStep: a.nextStep,
-            closeTarget: a.closeTarget,
-            amName: a.amName,
-            lastTouch: relativeTime(a.lastTouch, SEED_ANCHOR),
-          },
-          contacts: ctx.contacts.map((c) => ({
-            name: c.name,
-            title: c.title,
-            relationship: c.relationship,
-            sentiment: c.sentiment,
-          })),
-          activities: ctx.activities.map((act) => ({
-            id: act.id,
-            kind: act.kind,
-            when: relativeTime(act.occurredAt, SEED_ANCHOR),
-            summary: act.summary,
-            body: act.body,
-          })),
-        };
+        return accountContextView(ctx);
       },
     }),
   },
