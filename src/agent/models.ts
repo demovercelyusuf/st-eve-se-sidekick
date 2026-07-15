@@ -5,6 +5,11 @@
 export const GENERATION_MODEL = "anthropic/claude-sonnet-5";
 export const CLASSIFY_MODEL = "anthropic/claude-haiku-4.5";
 
-// We can only reach the gateway with a key locally, or OIDC on Vercel. When neither is
-// present, st-eve falls back to a deterministic brief so the app still runs and demos.
-export const gatewayReady = Boolean(process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN);
+// We reach the gateway with a key locally, or via Vercel's OIDC token in the cloud. The catch:
+// at runtime that token isn't in process.env — the SDK pulls it from the request context (it
+// arrives as a header), so checking process.env.VERCEL_OIDC_TOKEN gives a false negative on a
+// real deployment. So treat "running on Vercel" as ready and let the SDK resolve the token;
+// only when none of these hold are we truly keyless and fall back to a deterministic brief.
+export const gatewayReady = Boolean(
+  process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || process.env.VERCEL,
+);

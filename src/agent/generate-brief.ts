@@ -67,14 +67,23 @@ export async function composeBrief(accountId: string) {
   let tokens = 0;
 
   if (gatewayReady) {
-    const res = await generateText({
-      model: GENERATION_MODEL,
-      output: Output.object({ schema: briefSchema }),
-      prompt: buildPrompt(account, contacts, activities),
-    });
-    output = res.output;
-    model = GENERATION_MODEL;
-    tokens = res.usage?.totalTokens ?? 0;
+    try {
+      const res = await generateText({
+        model: GENERATION_MODEL,
+        output: Output.object({ schema: briefSchema }),
+        prompt: buildPrompt(account, contacts, activities),
+      });
+      output = res.output;
+      model = GENERATION_MODEL;
+      tokens = res.usage?.totalTokens ?? 0;
+    } catch (err) {
+      // Gateway unreachable, auth rejected, or the model choked — degrade to the deterministic
+      // brief instead of failing the request. The badge stays honest so a fallback is never
+      // passed off as a real generation, and the eval still gets a scoreable output.
+      console.error("[brief] gateway generation failed, using fallback:", err);
+      output = fallbackBrief(account, activities);
+      model = "fallback (gateway error)";
+    }
   } else {
     output = fallbackBrief(account, activities);
     model = "fallback (no AI Gateway)";
