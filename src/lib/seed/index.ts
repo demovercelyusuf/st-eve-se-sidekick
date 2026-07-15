@@ -2,7 +2,7 @@ import type { Account, Activity, Contact, Persona } from "@/db/schema";
 
 // Bump this whenever the seed data changes — the DB compares it against what it has loaded and
 // truncates + reloads when they differ. Dated + named so the history reads clearly.
-export const SEED_VERSION = "2026-07-15-vercel-customers-1";
+export const SEED_VERSION = "2026-07-15-vercel-customers-2";
 
 // The patches you can switch between in the persona picker.
 export const PERSONAS: Persona[] = [
