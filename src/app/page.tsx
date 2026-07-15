@@ -32,6 +32,7 @@ export default async function Page() {
     stage: a.stage as Stage,
     priority: a.priority as Priority,
     atRisk: a.atRisk,
+    amName: a.amName,
     nextStep: a.nextStep,
     touchLabel: relativeTime(a.lastTouch, SEED_ANCHOR),
   }));
