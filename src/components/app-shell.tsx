@@ -29,7 +29,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           st·eve
         </Link>
         <div className="flex items-center gap-4">
-          <ThemeSwitcher initial={theme} />
+          <div data-tour="themes">
+            <ThemeSwitcher initial={theme} />
+          </div>
           <ProfileMenu
             name={me?.name ?? "You"}
             accountCount={patch.accounts.length}
@@ -40,7 +42,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <div className="flex flex-1">
-        <aside className="w-[232px] shrink-0 border-r border-border bg-surface p-4">
+        <aside data-tour="nav" className="w-[232px] shrink-0 border-r border-border bg-surface p-4">
           <p className="mb-2 px-2 text-[11px] font-semibold tracking-wide text-sub">WORKSPACE</p>
           <SidebarNav />
         </aside>

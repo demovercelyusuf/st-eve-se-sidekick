@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { ProductTour, TourButton } from "@/components/tour/product-tour";
 import { PatchTable, type PatchRowData } from "@/components/command/patch-table";
 import { getPatch } from "@/data/repository";
 import { hasDb } from "@/db/client";
@@ -41,22 +42,28 @@ export default async function Page() {
   return (
     <AppShell>
       <div className="flex flex-col gap-5">
-        <header>
-          <h1 className="text-xl font-bold">Your patch</h1>
-          <p className="text-sm text-sub">
-            {kpis.accounts} accounts across 4 AM patches · sorted by priority
-          </p>
+        <header className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold">Your patch</h1>
+            <p className="text-sm text-sub">
+              {kpis.accounts} accounts across 4 AM patches · sorted by priority
+            </p>
+          </div>
+          <TourButton className="shrink-0" />
         </header>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div data-tour="kpis" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Tile n={kpis.accounts} label="Accounts" />
           <Tile n={kpis.atRisk} label="At risk" tone="text-danger" />
           <Tile n={kpis.awaiting} label="Awaiting next step" tone="text-warn" />
           <Tile n={kpis.wins} label="Technical wins" tone="text-success" />
         </div>
 
-        <PatchTable initial={rows} canEdit={hasDb} />
+        <div data-tour="patch">
+          <PatchTable initial={rows} canEdit={hasDb} />
+        </div>
       </div>
+      <ProductTour />
     </AppShell>
   );
 }
