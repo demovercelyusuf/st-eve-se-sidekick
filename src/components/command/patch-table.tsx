@@ -6,6 +6,7 @@ import { Pill } from "@/components/ui/pill";
 import { formatArr, priorityBadge, stageBadge, TONE_CLASS } from "@/lib/ui";
 import { PRIORITY_LABEL, STAGE_LABEL, STAGE_ORDER, type Priority, type Stage } from "@/lib/domain";
 import { addAccountAction, deleteAccountAction, updateAccountAction } from "@/app/actions";
+import { track } from "@/lib/analytics";
 
 // The row shape the server hands down — lastTouch is pre-formatted so we don't drag the seed
 // anchor into the client bundle.
@@ -17,6 +18,7 @@ export type PatchRowData = {
   stage: Stage;
   priority: Priority;
   atRisk: boolean;
+  amName: string | null;
   nextStep: string | null;
   touchLabel: string;
 };
@@ -38,13 +40,18 @@ export function PatchTable({ initial, canEdit }: { initial: PatchRowData[]; canE
   const [q, setQ] = useState("");
   const [stage, setStage] = useState<Stage | "all">("all");
   const [priority, setPriority] = useState<Priority | "all">("all");
+  const [am, setAm] = useState<string>("all");
   const [atRiskOnly, setAtRiskOnly] = useState(false);
-  const filtersOn = q !== "" || stage !== "all" || priority !== "all" || atRiskOnly;
+  const filtersOn = q !== "" || stage !== "all" || priority !== "all" || am !== "all" || atRiskOnly;
+
+  // The AMs actually present in the patch, for the filter dropdown.
+  const amOptions = [...new Set(rows.map((r) => r.amName).filter((x): x is string => Boolean(x)))].sort();
 
   const filtered = rows.filter((r) => {
     if (q && !`${r.name} ${r.nextStep ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
     if (stage !== "all" && r.stage !== stage) return false;
     if (priority !== "all" && r.priority !== priority) return false;
+    if (am !== "all" && r.amName !== am) return false;
     if (atRiskOnly && !r.atRisk) return false;
     return true;
   });
@@ -64,6 +71,7 @@ export function PatchTable({ initial, canEdit }: { initial: PatchRowData[]; canE
     setQ("");
     setStage("all");
     setPriority("all");
+    setAm("all");
     setAtRiskOnly(false);
   }
 
@@ -89,6 +97,14 @@ export function PatchTable({ initial, canEdit }: { initial: PatchRowData[]; canE
           {PRIORITIES.map((p) => (
             <option key={p} value={p}>
               {PRIORITY_LABEL[p]}
+            </option>
+          ))}
+        </select>
+        <select value={am} onChange={(e) => setAm(e.target.value)} className={FILTER}>
+          <option value="all">All AMs</option>
+          {amOptions.map((a) => (
+            <option key={a} value={a}>
+              {a}
             </option>
           ))}
         </select>
@@ -262,8 +278,10 @@ function AddAccountForm({ onCancel, onAdded }: { onCancel: () => void; onAdded: 
     };
     const id = await addAccountAction(input);
     setBusy(false);
-    if (id) onAdded({ id, atRisk: false, touchLabel: "just now", ...input });
-    else onCancel(); // no DB (seed mode) — nothing persisted
+    if (id) {
+      track("account_created", { stage: input.stage, priority: input.priority });
+      onAdded({ id, atRisk: false, touchLabel: "just now", ...input });
+    } else onCancel(); // no DB (seed mode) — nothing persisted
   }
 
   const field = "rounded-[var(--radius)] border border-border bg-bg px-2 py-1.5 text-sm outline-none focus:border-accent";

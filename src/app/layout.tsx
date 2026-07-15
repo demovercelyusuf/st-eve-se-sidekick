@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Geist, Poppins, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { DEFAULT_THEME, isThemeId, THEME_COOKIE } from "@/lib/themes";
+import { Analytics } from "@/components/analytics";
 
 // Load all three theme fonts up front, self-hosted — switching a theme shouldn't
 // re-fetch a font or shift the layout. Each theme just repoints --font-theme at one
@@ -40,7 +41,9 @@ export default async function RootLayout({
       data-theme={theme}
       className={`${geist.variable} ${poppins.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <Analytics>{children}</Analytics>
+      </body>
     </html>
   );
 }
