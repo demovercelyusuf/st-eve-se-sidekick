@@ -40,7 +40,7 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
     body: a.body,
     timeLabel: relativeTime(a.occurredAt, SEED_ANCHOR),
   }));
-  const todoRows: TodoRow[] = todos.map((t) => ({ id: t.id, text: t.text, done: t.done, priority: t.priority, due: t.due }));
+  const todoRows: TodoRow[] = todos.map((t) => ({ id: t.id, text: t.text, done: t.done }));
 
   const stage = stageBadge(account.stage as Stage);
   const priority = priorityBadge(account.priority as Priority);

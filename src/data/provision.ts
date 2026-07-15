@@ -15,7 +15,8 @@ import { ACCOUNTS, ACTIVITIES, CONTACTS, PERSONAS, SEED_VERSION } from "@/lib/se
 
 // Idempotent DDL — safe to run on every cold start. Enums need the DO/EXCEPTION dance because
 // Postgres has no CREATE TYPE IF NOT EXISTS. No foreign keys: the app joins by id in code, and
-// skipping them keeps truncate-and-reseed order-independent. briefs + eval_runs already exist.
+// skipping them keeps truncate-and-reseed order-independent. Covers every table the app writes,
+// so a completely empty database self-heals on first request (briefs included).
 const DDL: string[] = [
   `DO $$ BEGIN CREATE TYPE "stage" AS ENUM('discovery','new_business_meeting','deeper_dive','pov','technical_win','sizing_scoping','quote'); EXCEPTION WHEN duplicate_object THEN null; END $$;`,
   `DO $$ BEGIN CREATE TYPE "priority" AS ENUM('high','medium','low'); EXCEPTION WHEN duplicate_object THEN null; END $$;`,
@@ -27,6 +28,7 @@ const DDL: string[] = [
   `CREATE TABLE IF NOT EXISTS "contacts" ("id" text PRIMARY KEY NOT NULL, "account_id" text NOT NULL, "name" text NOT NULL, "title" text NOT NULL, "relationship" "relationship" NOT NULL, "sentiment" "sentiment" NOT NULL);`,
   `CREATE TABLE IF NOT EXISTS "activities" ("id" text PRIMARY KEY NOT NULL, "account_id" text NOT NULL, "kind" "activity_kind" NOT NULL, "summary" text NOT NULL, "body" text NOT NULL, "source" text, "occurred_at" timestamptz NOT NULL);`,
   `CREATE TABLE IF NOT EXISTS "todos" ("id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL, "account_id" text NOT NULL, "text" text NOT NULL, "done" boolean DEFAULT false NOT NULL, "priority" "priority" DEFAULT 'medium' NOT NULL, "due" text, "created_at" timestamptz DEFAULT now() NOT NULL);`,
+  `CREATE TABLE IF NOT EXISTS "briefs" ("id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL, "account_id" text NOT NULL, "created_at" timestamptz DEFAULT now() NOT NULL, "sfdc_summary" text NOT NULL, "slack_update" text NOT NULL, "inferred_stage" "stage" NOT NULL, "inferred_confidence" real NOT NULL, "next_steps" jsonb NOT NULL, "citations" jsonb NOT NULL, "grounded" boolean NOT NULL, "meta" jsonb);`,
   `CREATE TABLE IF NOT EXISTS "seed_meta" ("id" integer PRIMARY KEY DEFAULT 1, "version" text NOT NULL);`,
   `CREATE INDEX IF NOT EXISTS "accounts_persona_idx" ON "accounts" ("persona_id");`,
   `CREATE INDEX IF NOT EXISTS "contacts_account_idx" ON "contacts" ("account_id");`,
@@ -39,7 +41,7 @@ async function provisionSchema() {
   for (const stmt of DDL) await db.execute(sql.raw(stmt));
 }
 
-// Wipe the account context (leaving generated briefs/eval-runs alone) and reload it from the
+// Wipe the account context (leaving generated briefs alone) and reload it from the
 // seed, then stamp the version. TRUNCATE has no FKs to fight, so order doesn't matter.
 async function reload() {
   if (!hasDb || !db) return;

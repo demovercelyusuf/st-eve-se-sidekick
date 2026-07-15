@@ -54,9 +54,8 @@ export function BriefDelivery({
   }
 
   async function postToSlack() {
-    const now = new Date();
-    setPostedAt(now);
     setPosting(true);
+    const now = new Date();
     const enriched = `${slackUpdate}\n\n👤 SE: ${se}\n🕒 Posted ${fmtLong(now)}`;
     try {
       await navigator.clipboard.writeText(enriched);
@@ -65,7 +64,13 @@ export function BriefDelivery({
     }
     try {
       const res = await postToSlackAction(accountId, enriched);
-      setSlackNote(res.ok ? `Posted to #${channel} ✅` : `Copied — ready to paste into #${channel}.`);
+      if (res.ok) {
+        // only claim "Posted <time>" when the webhook actually delivered
+        setPostedAt(now);
+        setSlackNote(`Posted to #${channel} ✅`);
+      } else {
+        setSlackNote(`Copied — ready to paste into #${channel}.`);
+      }
     } catch {
       setSlackNote(`Copied — ready to paste into #${channel}.`);
     } finally {

@@ -7,7 +7,7 @@ import { addActivityAction, addTodoAction, deleteTodoAction, toggleTodoAction } 
 
 type Kind = "note" | "email" | "slack" | "call" | "meeting";
 export type ActivityRow = { id: string; kind: Kind; summary: string; body: string; timeLabel: string };
-export type TodoRow = { id: string; text: string; done: boolean; priority: "high" | "medium" | "low"; due: string | null };
+export type TodoRow = { id: string; text: string; done: boolean };
 
 const KIND_TONE: Record<Kind, Tone> = { note: "accent", email: "info", slack: "success", call: "warn", meeting: "muted" };
 const KIND_LABEL: Record<Kind, string> = { note: "Note", email: "Email", slack: "Slack", call: "Call", meeting: "Meeting" };
