@@ -18,6 +18,8 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
   const [greeted, setGreeted] = useState(true);
   const [imgOk, setImgOk] = useState(true);
   const [input, setInput] = useState("");
+  const [minimized, setMinimized] = useState(false); // yellow — collapse to the title bar
+  const [maximized, setMaximized] = useState(false); // green — fill the screen
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({ api: "/api/copilot" }),
   });
@@ -36,6 +38,13 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
     sendMessage({ text });
     setInput("");
   }
+
+  // Red closes back to the mascot; yellow/green are the window controls.
+  const closeDock = () => {
+    setOpen(false);
+    setMinimized(false);
+    setMaximized(false);
+  };
 
   const avatar = (px: number) =>
     imgOk ? (
@@ -64,6 +73,7 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
           </div>
         )}
         <button
+          data-tour="dock"
           onClick={() => setOpen(true)}
           aria-label="Open st·eve"
           className="grid size-16 place-items-center rounded-full border border-border bg-surface shadow-lg transition-transform hover:scale-105"
@@ -75,22 +85,47 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
   }
 
   // ---- open: terminal chat + router panel (themed) ----
-  return (
-    <div className="fixed bottom-5 right-5 z-40 flex h-[32rem] w-[min(46rem,calc(100vw-2.5rem))] overflow-hidden rounded-xl border border-border bg-surface font-mono text-[13px] text-ink shadow-2xl">
-      {/* chat column */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-          <span className="size-2.5 rounded-full bg-[#ff5f56]" />
-          <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
-          <span className="size-2.5 rounded-full bg-[#27c93f]" />
-          <span className="ml-1 text-sub">st·eve — copilot</span>
-          <button onClick={() => setOpen(false)} className="ml-auto text-sub hover:text-ink">
-            ✕
-          </button>
-        </div>
+  const shell = maximized
+    ? "inset-3 sm:inset-6"
+    : `bottom-5 right-5 w-[min(46rem,calc(100vw-2.5rem))]${minimized ? "" : " h-[32rem]"}`;
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3">
-          {messages.length === 0 && (
+  return (
+    <div
+      className={`fixed z-40 flex flex-col overflow-hidden rounded-xl border border-border bg-surface font-mono text-[13px] text-ink shadow-2xl ${shell}`}
+    >
+      {/* title bar — the traffic lights are real window controls */}
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
+        <Light color="#ff5f56" glyph="✕" title="Close" onClick={closeDock} />
+        <Light
+          color="#ffbd2e"
+          glyph="–"
+          title={minimized ? "Expand" : "Minimize"}
+          onClick={() => {
+            setMaximized(false);
+            setMinimized((m) => !m);
+          }}
+        />
+        <Light
+          color="#27c93f"
+          glyph="+"
+          title={maximized ? "Restore" : "Full screen"}
+          onClick={() => {
+            setMinimized(false);
+            setMaximized((m) => !m);
+          }}
+        />
+        <span className="ml-1 text-sub">st·eve — copilot</span>
+        <button onClick={closeDock} aria-label="Close" className="ml-auto text-sub hover:text-ink">
+          ✕
+        </button>
+      </div>
+
+      {/* body — hidden when minimized to the title bar */}
+      <div className={`flex min-h-0 flex-1 ${minimized ? "hidden" : ""}`}>
+        {/* chat column */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3">
+            {messages.length === 0 && (
             <div className="text-sub">
               <p className="mb-3">
                 <span className="text-success">st·eve</span> ready. I pull the real account context before I answer —
@@ -172,8 +207,36 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
             <div className="mt-1 text-sub/60">↳ routed to sonnet-5</div>
           </div>
         )}
-      </aside>
+        </aside>
+      </div>
     </div>
+  );
+}
+
+function Light({
+  color,
+  glyph,
+  title,
+  onClick,
+}: {
+  color: string;
+  glyph: string;
+  title: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      className="group grid size-3 place-items-center rounded-full"
+      style={{ background: color }}
+    >
+      <span className="text-[8px] font-bold leading-none text-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+        {glyph}
+      </span>
+    </button>
   );
 }
 
