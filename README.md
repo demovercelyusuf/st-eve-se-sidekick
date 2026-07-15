@@ -35,6 +35,7 @@ The full, editable diagram lives in [Figma](https://www.figma.com/design/oNqoh4w
 - **AI Gateway, routed per task.** Sonnet 5 writes the weekly brief, where care matters more than speed. Haiku 4.5 runs the copilot chat and the Patch Health classification, where a fast, cheap reply matters more. Swapping any of them (say, Gemini Flash for the chat once there are gateway credits) is one line, and provider failover comes for free.
 - **Neon Postgres + Drizzle** hold the live patch, contacts, to-dos, and generated briefs. The demo data is a versioned synthetic seed of real Vercel customers with believable sales motions, so it's deterministic and it doubles as Patch Health's pinned ground truth. The app provisions and seeds Neon itself on the first request, so there's nothing to run by hand.
 - **Adapters** keep integrations behind one seam. Slack is a real Incoming Webhook. The Salesforce write-back is the documented Vercel Connect seam, and for now the UI just copies the summary to your clipboard.
+- **Product analytics with PostHog.** Autocapture, session recording, and geoIP locations show how the demo actually gets used, and a handful of semantic events cover the moments that matter, like a brief generated or a Slack update posted. Everything routes through a same-origin `/ingest` proxy so content blockers don't drop it, and the write-only public project key comes from an env var, not the repo.
 
 ## Decisions & trade-offs
 
