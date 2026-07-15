@@ -7,6 +7,7 @@ import {
   contacts,
   evalRuns,
   personas,
+  todos,
   type Account,
   type Brief,
   type EvalRun,
@@ -166,4 +167,67 @@ export async function getEvalRuns(limit = 10): Promise<EvalRun[]> {
     return db.select().from(evalRuns).orderBy(desc(evalRuns.createdAt)).limit(limit);
   }
   return memEvalRuns.slice(0, limit);
+}
+
+// ---- account mutations (Neon only; seed mode is read-only, which the UI reflects) ----
+
+// The fields a user can edit from the app. personaId/id/lastTouch aren't in here on purpose —
+// those aren't things you retype in a text box.
+export type AccountPatch = Partial<
+  Pick<Account, "name" | "industry" | "arr" | "stage" | "priority" | "atRisk" | "nextStep" | "closeTarget" | "amName">
+>;
+
+function slugify(s: string): string {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "account";
+}
+
+export async function updateAccount(id: string, patch: AccountPatch): Promise<void> {
+  if (!hasDb || !db) return;
+  await db.update(accounts).set(patch).where(eq(accounts.id, id));
+}
+
+export type NewAccount = {
+  name: string;
+  industry: string;
+  arr: number;
+  stage: Account["stage"];
+  priority: Account["priority"];
+  amName?: string | null;
+  nextStep?: string | null;
+  closeTarget?: string | null;
+  personaId?: string;
+};
+
+// Slug the name into an id; if it collides, salt it so two "Acme" accounts can coexist.
+export async function createAccount(input: NewAccount): Promise<string | null> {
+  if (!hasDb || !db) return null;
+  const base = slugify(input.name);
+  const values = {
+    personaId: input.personaId ?? "you",
+    name: input.name,
+    industry: input.industry,
+    arr: input.arr,
+    stage: input.stage,
+    priority: input.priority,
+    atRisk: false,
+    nextStep: input.nextStep ?? null,
+    closeTarget: input.closeTarget ?? null,
+    amName: input.amName ?? null,
+    lastTouch: new Date(),
+  };
+  let [row] = await db.insert(accounts).values({ id: base, ...values }).onConflictDoNothing().returning({ id: accounts.id });
+  if (!row) {
+    const id = `${base}-${crypto.randomUUID().slice(0, 4)}`;
+    [row] = await db.insert(accounts).values({ id, ...values }).returning({ id: accounts.id });
+  }
+  return row?.id ?? null;
+}
+
+// Delete the account and everything hanging off it. No DB FKs, so we cascade in code.
+export async function deleteAccount(id: string): Promise<void> {
+  if (!hasDb || !db) return;
+  await db.delete(activities).where(eq(activities.accountId, id));
+  await db.delete(contacts).where(eq(contacts.accountId, id));
+  await db.delete(todos).where(eq(todos.accountId, id));
+  await db.delete(accounts).where(eq(accounts.id, id));
 }

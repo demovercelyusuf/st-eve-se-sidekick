@@ -2,7 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { generateBrief } from "@/agent/generate-brief";
-import { getAccount, getLatestBrief } from "@/data/repository";
+import {
+  createAccount,
+  deleteAccount,
+  getAccount,
+  getLatestBrief,
+  updateAccount,
+  type AccountPatch,
+  type NewAccount,
+} from "@/data/repository";
 import { salesforce } from "@/adapters/salesforce";
 import { slack } from "@/adapters/slack";
 import { runEvals } from "@/agent/eval";
@@ -34,4 +42,23 @@ export async function postToSlackAction(accountId: string) {
 export async function runEvalsAction() {
   await runEvals();
   revalidatePath("/evals");
+}
+
+// ---- account editing ----
+
+export async function updateAccountAction(id: string, patch: AccountPatch) {
+  await updateAccount(id, patch);
+  revalidatePath("/");
+  revalidatePath(`/accounts/${id}`);
+}
+
+export async function addAccountAction(input: NewAccount) {
+  const id = await createAccount(input);
+  revalidatePath("/");
+  return id;
+}
+
+export async function deleteAccountAction(id: string) {
+  await deleteAccount(id);
+  revalidatePath("/");
 }
