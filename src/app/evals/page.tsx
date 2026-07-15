@@ -47,7 +47,7 @@ export default async function EvalsPage() {
 
           {!latest ? (
             <div className="rounded-[var(--radius)] border border-border bg-surface px-4 py-12 text-center text-sm text-sub">
-              No eval runs yet — hit Run evals and st-eve grades itself over all 24 labeled accounts.
+              No eval runs yet — hit Run evals and st-eve grades itself over the whole labeled seed.
             </div>
           ) : (
             <>

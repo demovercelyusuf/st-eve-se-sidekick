@@ -15,6 +15,13 @@
       "when": 1784079137544,
       "tag": "0001_wonderful_lenny_balinger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784081603788,
+      "tag": "0002_lean_nextwave",
+      "breakpoints": true
     }
   ]
 }

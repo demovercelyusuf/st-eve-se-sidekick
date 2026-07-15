@@ -42,7 +42,7 @@ export default async function Page() {
         <header>
           <h1 className="text-xl font-bold">Your patch</h1>
           <p className="text-sm text-sub">
-            {kpis.accounts} accounts across 2 AM patches · sorted by priority
+            {kpis.accounts} accounts across 4 AM patches · sorted by priority
           </p>
         </header>
 
