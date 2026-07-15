@@ -195,7 +195,7 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
       {/* model-router panel */}
       <aside className="hidden w-52 shrink-0 flex-col border-l border-border bg-bg px-3 py-3 text-[11px] sm:flex">
         <div className="mb-2 font-semibold text-sub">MODEL ROUTER · AI GATEWAY</div>
-        <Row label="chat + tools (fast)" value="gemini-3-flash" />
+        <Row label="chat + tools (fast)" value="claude-haiku-4.5" />
         <Row label="brief writing" value="claude-sonnet-5" />
         <Row label="classify (patch health)" value="claude-haiku-4.5" />
         <div className="my-3 border-t border-border" />
@@ -211,7 +211,7 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
                   <span className="size-1.5 rounded-full bg-success" /> {tool}
                 </div>
               ))}
-            <div className="mt-1 text-sub/60">↳ routed to gemini-3-flash</div>
+            <div className="mt-1 text-sub/60">↳ routed to haiku-4.5</div>
           </div>
         )}
         </aside>

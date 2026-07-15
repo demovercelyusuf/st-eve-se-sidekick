@@ -1,10 +1,11 @@
 // Everything routes through AI Gateway (plain provider/model strings — the gateway is the default
 // provider), so each job gets the model that fits it and swapping any one is a one-line change.
-// Sonnet 5 writes the weekly brief, where care matters more than speed. Gemini 3 Flash runs the
-// copilot chat, where snappy replies matter more. Haiku 4.5 does the cheap Patch Health
-// classification. Different providers, one gateway, routed per task.
+// Sonnet 5 writes the weekly brief, where care matters more than speed. Haiku 4.5 runs the copilot
+// chat, where snappy replies matter more, and it does the cheap Patch Health classification too.
+// Gemini 3 Flash is the natural swap for the chat, but it needs paid gateway credits; on the free
+// tier Haiku 4.5 is the fast option, and moving to Gemini later is a one-line change here.
 export const GENERATION_MODEL = "anthropic/claude-sonnet-5"; // brief writing
-export const COPILOT_MODEL = "google/gemini-3-flash"; // the chat — fast
+export const COPILOT_MODEL = "anthropic/claude-haiku-4.5"; // the chat — fast (Gemini Flash = paid swap)
 export const CLASSIFY_MODEL = "anthropic/claude-haiku-4.5"; // Patch Health momentum
 
 // We reach the gateway with a key locally, or via Vercel's OIDC token in the cloud. The catch:
