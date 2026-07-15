@@ -8,7 +8,7 @@ export default function NotFound() {
         <div className="text-5xl font-bold">404</div>
         <p className="text-sm text-sub">That account isn&apos;t in your patch.</p>
         <Link
-          href="/"
+          href="/app"
           className="rounded-[var(--radius)] bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg"
         >
           Back to your patch
