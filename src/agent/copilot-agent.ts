@@ -21,7 +21,7 @@ export const copilotAgent = new ToolLoopAgent({
       description: "List the accounts in the SE's patch with stage, priority, at-risk flag, and next step. Use this to find or compare accounts.",
       inputSchema: z.object({ personaId: z.string().optional() }),
       execute: async ({ personaId }) =>
-        getPatch(personaId ?? "you").accounts.map((a) => ({
+        (await getPatch(personaId ?? "you")).accounts.map((a) => ({
           id: a.id,
           name: a.name,
           industry: a.industry,
@@ -36,7 +36,7 @@ export const copilotAgent = new ToolLoopAgent({
       description: "Get one account's full context: facts, contacts, and the activity timeline. Use before answering anything specific about an account.",
       inputSchema: z.object({ accountId: z.string() }),
       execute: async ({ accountId }) => {
-        const ctx = getAccount(accountId);
+        const ctx = await getAccount(accountId);
         if (!ctx) return { error: `no account with id "${accountId}"` };
         return {
           account: ctx.account,

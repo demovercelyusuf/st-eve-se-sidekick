@@ -1,6 +1,6 @@
 import type { EvalRun } from "@/db/schema";
 import { ACCOUNTS } from "@/lib/seed";
-import { saveEvalRun } from "@/data/repository";
+import { getSeedAccount, saveEvalRun } from "@/data/repository";
 import { composeBrief } from "./generate-brief";
 import { GENERATION_MODEL, gatewayReady } from "./models";
 
@@ -34,7 +34,8 @@ export async function runEvals(): Promise<EvalRun> {
   const accounts = ACCOUNTS;
 
   const cases = await mapLimit(accounts, 6, async (a) => {
-    const brief = await composeBrief(a.id);
+    // Grade against the pinned seed context, not the live (editable) DB account.
+    const brief = await composeBrief(a.id, getSeedAccount(a.id) ?? undefined);
     return {
       accountId: a.id,
       predictedStage: brief.inferredStage,

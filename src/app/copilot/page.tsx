@@ -10,7 +10,7 @@ export default async function CopilotPage({
 }) {
   // "Ask st·eve" from an account passes ?account=<id> so we can offer a focused first prompt.
   const { account } = await searchParams;
-  const ctx = account ? getAccount(account) : null;
+  const ctx = account ? await getAccount(account) : null;
   const focus = ctx ? { id: ctx.account.id, name: ctx.account.name } : undefined;
 
   return (

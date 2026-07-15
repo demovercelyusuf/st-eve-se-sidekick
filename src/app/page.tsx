@@ -20,8 +20,8 @@ function Tile({ n, label, tone }: { n: number; label: string; tone?: string }) {
   );
 }
 
-export default function Page() {
-  const { accounts, kpis } = getPatch(DEFAULT_PERSONA);
+export default async function Page() {
+  const { accounts, kpis } = await getPatch(DEFAULT_PERSONA);
 
   return (
     <AppShell>
