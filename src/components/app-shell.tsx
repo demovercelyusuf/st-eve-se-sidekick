@@ -5,6 +5,7 @@ import { getPatch, getPersonas } from "@/data/repository";
 import { hasDb } from "@/db/client";
 import { ThemeSwitcher } from "./theme-switcher";
 import { SidebarNav } from "./sidebar-nav";
+import { MobileNav } from "./mobile-nav";
 import { ProfileMenu } from "./profile-menu";
 import { PageTransition } from "./ui/page-transition";
 
@@ -24,11 +25,14 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-ink">
-      <header className="flex h-16 items-center justify-between border-b border-border bg-surface px-6">
-        <Link href="/app" className="text-lg font-bold text-accent">
-          st·eve
-        </Link>
-        <div className="flex items-center gap-4">
+      <header className="flex h-16 items-center justify-between gap-2 border-b border-border bg-surface px-4 lg:px-6">
+        <div className="flex items-center gap-1.5">
+          <MobileNav />
+          <Link href="/app" className="text-lg font-bold text-accent">
+            st·eve
+          </Link>
+        </div>
+        <div className="flex items-center gap-3 lg:gap-4">
           <div data-tour="themes">
             <ThemeSwitcher initial={theme} />
           </div>
@@ -42,11 +46,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <div className="flex flex-1">
-        <aside data-tour="nav" className="w-[232px] shrink-0 border-r border-border bg-surface p-4">
+        <aside data-tour="nav" className="hidden w-[232px] shrink-0 border-r border-border bg-surface p-4 lg:block">
           <p className="mb-2 px-2 text-[11px] font-semibold tracking-wide text-sub">WORKSPACE</p>
           <SidebarNav />
         </aside>
-        <main className="min-w-0 flex-1 p-6">
+        <main className="min-w-0 flex-1 p-4 lg:p-6">
           <PageTransition>{children}</PageTransition>
         </main>
       </div>
