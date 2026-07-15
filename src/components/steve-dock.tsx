@@ -5,6 +5,7 @@ import { DefaultChatTransport } from "ai";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { hasAnswerText, thinkingLine } from "@/lib/copilot-status";
 
 // st·eve, everywhere. A floating dock: the mascot waves with a greeting until you open it, then
 // it's a terminal-style chat with a model-router panel showing which model AI Gateway routed to
@@ -25,6 +26,11 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
   });
   const busy = status === "submitted" || status === "streaming";
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // A conversational "what I'm doing" line while st·eve works, until its actual reply starts.
+  const lastMsg = messages[messages.length - 1];
+  const answering = lastMsg?.role === "assistant" && hasAnswerText(lastMsg.parts);
+  const workingLine = busy && !answering ? thinkingLine(lastMsg?.role === "assistant" ? lastMsg.parts : []) : null;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -163,7 +169,7 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
                 </div>
               ),
             )}
-            {busy && <div className="text-sub">st·eve is thinking▍</div>}
+            {workingLine && <div className="text-accent">{workingLine}▍</div>}
             {error && <div className="text-danger">error: {error.message} — try again</div>}
           </div>
         </div>
@@ -189,7 +195,8 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
       {/* model-router panel */}
       <aside className="hidden w-52 shrink-0 flex-col border-l border-border bg-bg px-3 py-3 text-[11px] sm:flex">
         <div className="mb-2 font-semibold text-sub">MODEL ROUTER · AI GATEWAY</div>
-        <Row label="reasoning + tools" value="claude-sonnet-5" />
+        <Row label="chat + tools (fast)" value="gemini-3-flash" />
+        <Row label="brief writing" value="claude-sonnet-5" />
         <Row label="classify (patch health)" value="claude-haiku-4.5" />
         <div className="my-3 border-t border-border" />
         <div className="mb-1 font-semibold text-sub">THIS SESSION</div>
@@ -204,7 +211,7 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
                   <span className="size-1.5 rounded-full bg-success" /> {tool}
                 </div>
               ))}
-            <div className="mt-1 text-sub/60">↳ routed to sonnet-5</div>
+            <div className="mt-1 text-sub/60">↳ routed to gemini-3-flash</div>
           </div>
         )}
         </aside>
