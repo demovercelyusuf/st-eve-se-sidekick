@@ -32,7 +32,7 @@ The full, editable diagram lives in [Figma](https://www.figma.com/design/oNqoh4w
 
 - **Next.js 16 (App Router)** on Fluid Compute. The read surfaces are server components that stream, and briefs, edits, and the health check run through server actions and route handlers (`/api/brief`, `/api/copilot`).
 - **AI SDK v7** for the agent. The brief streams as a structured object (`streamObject`), and the copilot is a `ToolLoopAgent` with read-only tools. Same brain, two surfaces.
-- **AI Gateway with tiered Claude.** Sonnet 5 reasons and writes, Haiku 4.5 does the cheap classification in Patch Health. One string per model, and provider failover comes for free.
+- **AI Gateway, routed per task.** Sonnet 5 writes the weekly brief, where care matters more than speed. Haiku 4.5 runs the copilot chat and the Patch Health classification, where a fast, cheap reply matters more. Swapping any of them (say, Gemini Flash for the chat once there are gateway credits) is one line, and provider failover comes for free.
 - **Neon Postgres + Drizzle** hold the live patch, contacts, to-dos, and generated briefs. The demo data is a versioned synthetic seed of real Vercel customers with believable sales motions, so it's deterministic and it doubles as Patch Health's pinned ground truth. The app provisions and seeds Neon itself on the first request, so there's nothing to run by hand.
 - **Adapters** keep integrations behind one seam. Slack is a real Incoming Webhook. The Salesforce write-back is the documented Vercel Connect seam, and for now the UI just copies the summary to your clipboard.
 
