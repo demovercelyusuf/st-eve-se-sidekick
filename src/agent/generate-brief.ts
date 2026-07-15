@@ -8,17 +8,14 @@ import { GENERATION_MODEL, gatewayReady } from "./models";
 
 // Either the live account context (from the DB) or the pinned seed context — the eval passes the
 // latter so a scoring run always grades against the same ground truth, even after a user edits.
-type AccountContext = { account: Account; contacts: Contact[]; activities: Activity[] };
+export type AccountContext = { account: Account; contacts: Contact[]; activities: Activity[] };
 
-function buildPrompt(account: Account, contacts: Contact[], activities: Activity[]): string {
+export function buildPrompt(account: Account, contacts: Contact[], activities: Activity[]): string {
   const people = contacts
     .map((c) => `- ${c.name}, ${c.title} (${c.relationship}, ${c.sentiment})`)
     .join("\n");
   const acts = activities
-    .map(
-      (a) =>
-        `[${a.id}] (${a.kind}, ${relativeTime(a.occurredAt, SEED_ANCHOR)}) ${a.summary}\n${a.body}`,
-    )
+    .map((a) => `[${a.id}] (${a.kind}, ${relativeTime(a.occurredAt, SEED_ANCHOR)}) ${a.summary}\n${a.body}`)
     .join("\n\n");
 
   return `You are st-eve, a solutions-engineering copilot. Write this account's weekly brief, grounded ONLY in the activities below — do not invent facts or ids.
@@ -57,44 +54,18 @@ function fallbackBrief(account: Account, activities: Activity[]): BriefOutput {
   };
 }
 
-// Generate + validate a brief but don't persist it — the eval leans on this so a scoring
-// run doesn't fill the store with throwaway briefs.
-export async function composeBrief(accountId: string, ctx?: AccountContext) {
-  const context = ctx ?? (await getAccount(accountId));
-  if (!context) throw new Error(`unknown account: ${accountId}`);
-  const { account, contacts, activities } = context;
-  const validIds = new Set(activities.map((a) => a.id));
-
-  const started = Date.now();
-  let output: BriefOutput;
-  let model: string;
-  let tokens = 0;
-
-  if (gatewayReady) {
-    try {
-      const res = await generateText({
-        model: GENERATION_MODEL,
-        output: Output.object({ schema: briefSchema }),
-        prompt: buildPrompt(account, contacts, activities),
-      });
-      output = res.output;
-      model = GENERATION_MODEL;
-      tokens = res.usage?.totalTokens ?? 0;
-    } catch (err) {
-      // Gateway unreachable, auth rejected, or the model choked — degrade to the deterministic
-      // brief instead of failing the request. The badge stays honest so a fallback is never
-      // passed off as a real generation, and the eval still gets a scoreable output.
-      console.error("[brief] gateway generation failed, using fallback:", err);
-      output = fallbackBrief(account, activities);
-      model = "fallback (gateway error)";
-    }
-  } else {
-    output = fallbackBrief(account, activities);
-    model = "fallback (no AI Gateway)";
-  }
-
-  // The grounding check that makes the citations trustworthy: drop anything the model
-  // pointed at that isn't a real activity, and only call it "grounded" if it stayed clean.
+// The grounding check that makes citations trustworthy: drop anything the model pointed at that
+// isn't a real activity, and only call it "grounded" if it stayed clean. Shared by the one-shot
+// path and the streaming route so both persist an identical, validated brief.
+export function finalizeBrief(
+  accountId: string,
+  output: BriefOutput,
+  ctx: AccountContext,
+  model: string,
+  latencyMs: number,
+  tokens = 0,
+) {
+  const validIds = new Set(ctx.activities.map((a) => a.id));
   const cited = [...output.citations.map((c) => c.activityId), ...output.nextSteps.flatMap((s) => s.citations)];
   const grounded = cited.length > 0 && cited.every((id) => validIds.has(id));
   const citations = output.citations.filter((c) => validIds.has(c.activityId));
@@ -112,11 +83,46 @@ export async function composeBrief(accountId: string, ctx?: AccountContext) {
     nextSteps,
     citations,
     grounded,
-    meta: { model, latencyMs: Date.now() - started, tokens },
+    meta: { model, latencyMs, tokens },
   };
 }
 
-// Compose + persist — what the "Generate brief" button calls.
+// Generate + validate a brief but don't persist it — the eval leans on this so a scoring run
+// doesn't fill the store with throwaway briefs. The account detail page streams instead (see the
+// /api/brief route); this stays the non-streaming path for the eval and the no-gateway fallback.
+export async function composeBrief(accountId: string, ctx?: AccountContext) {
+  const context = ctx ?? (await getAccount(accountId));
+  if (!context) throw new Error(`unknown account: ${accountId}`);
+
+  const started = Date.now();
+  let output: BriefOutput;
+  let model: string;
+  let tokens = 0;
+
+  if (gatewayReady) {
+    try {
+      const res = await generateText({
+        model: GENERATION_MODEL,
+        output: Output.object({ schema: briefSchema }),
+        prompt: buildPrompt(context.account, context.contacts, context.activities),
+      });
+      output = res.output;
+      model = GENERATION_MODEL;
+      tokens = res.usage?.totalTokens ?? 0;
+    } catch (err) {
+      console.error("[brief] gateway generation failed, using fallback:", err);
+      output = fallbackBrief(context.account, context.activities);
+      model = "fallback (gateway error)";
+    }
+  } else {
+    output = fallbackBrief(context.account, context.activities);
+    model = "fallback (no AI Gateway)";
+  }
+
+  return finalizeBrief(accountId, output, context, model, Date.now() - started, tokens);
+}
+
+// Compose + persist — the no-gateway fallback path the button calls when there's no streaming.
 export async function generateBrief(accountId: string): Promise<Brief> {
   return saveBrief(await composeBrief(accountId));
 }
