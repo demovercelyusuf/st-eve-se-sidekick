@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // st·eve, everywhere. A floating dock: the mascot waves with a greeting until you open it, then
 // it's a terminal-style chat with a model-router panel that shows which model AI Gateway routed
@@ -19,10 +19,16 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
   const [greeted, setGreeted] = useState(true);
   const [imgOk, setImgOk] = useState(true);
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({ api: "/api/copilot" }),
   });
   const busy = status === "submitted" || status === "streaming";
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Keep the latest line in view as answers stream in.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+  }, [messages]);
 
   function send(text: string) {
     if (!text.trim() || !gatewayReady) return;
@@ -90,7 +96,7 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 py-3">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3">
           {messages.length === 0 && (
             <div className="text-[#8b949e]">
               <p className="mb-3">
@@ -130,6 +136,7 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
               ),
             )}
             {busy && <div className="text-[#8b949e]">st·eve is thinking▍</div>}
+            {error && <div className="text-[#ff5f56]">error: {error.message} — try again</div>}
           </div>
         </div>
 
