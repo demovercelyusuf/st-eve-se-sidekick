@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const ITEMS = [
-  { href: "/", label: "Command Center" },
+  { href: "/app", label: "Command Center" },
   { href: "/board", label: "Board" },
   { href: "/copilot", label: "st·eve Copilot" },
   { href: "/evals", label: "Evals" },
@@ -17,8 +17,8 @@ export function SidebarNav() {
   return (
     <nav className="flex flex-col gap-1">
       {ITEMS.map((item) => {
-        // keep "/" exact; everything else matches its subtree, so /accounts/acme still lights up Accounts
-        const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+        // keep the Command Center exact; everything else matches its subtree, so /accounts/acme still lights up Accounts
+        const active = item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}

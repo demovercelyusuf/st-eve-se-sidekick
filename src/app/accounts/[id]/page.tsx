@@ -58,7 +58,7 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
     <AppShell>
       <div className="flex gap-6">
         <div className="flex min-w-0 flex-1 flex-col gap-5">
-          <Link href="/" className="text-sm font-medium text-accent">
+          <Link href="/app" className="text-sm font-medium text-accent">
             ‹ Your patch
           </Link>
 

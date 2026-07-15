@@ -28,8 +28,8 @@ export function SteveDock({ gatewayReady }: { gatewayReady: boolean }) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
 
-  // The /copilot page is the full-size chat — no need to float over it (and it'd cover Send).
-  if (pathname === "/copilot") return null;
+  // The landing owns its own hero mascot, and /copilot is the full-size chat — don't float over either.
+  if (pathname === "/" || pathname === "/copilot") return null;
 
   function send(text: string) {
     if (!text.trim() || !gatewayReady) return;

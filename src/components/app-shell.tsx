@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { DEFAULT_THEME, isThemeId, THEME_COOKIE, type ThemeId } from "@/lib/themes";
 import { getPatch, getPersonas } from "@/data/repository";
@@ -23,7 +24,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-bg text-ink">
       <header className="flex h-16 items-center justify-between border-b border-border bg-surface px-6">
-        <span className="text-lg font-bold text-accent">st·eve</span>
+        <Link href="/app" className="text-lg font-bold text-accent">
+          st·eve
+        </Link>
         <div className="flex items-center gap-4">
           <ThemeSwitcher initial={theme} />
           <ProfileMenu
