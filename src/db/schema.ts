@@ -13,7 +13,7 @@ import {
 
 /*
  * The st-eve data model. Static account context (accounts, contacts, activities) is
- * synthetic and seeded; the dynamic stuff st-eve produces (briefs, eval_runs) is what
+ * synthetic and seeded; the dynamic stuff st-eve produces (briefs) is what
  * really earns its keep in the DB. One opportunity per account, so its fields (stage,
  * priority, close target) just live on the account — no separate table to join.
  */
@@ -130,29 +130,6 @@ export const briefs = pgTable("briefs", {
   meta: jsonb("meta").$type<{ model: string; latencyMs: number; tokens: number }>(),
 });
 
-// One run of the eval harness over the labeled set — the "production thinking" scorecard.
-export const evalRuns = pgTable("eval_runs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  accountCount: integer("account_count").notNull(),
-  stageAccuracy: real("stage_accuracy").notNull(), // 0..1
-  groundingRate: real("grounding_rate").notNull(),
-  completeness: real("completeness").notNull(),
-  status: text("status").notNull(), // "pass" | "warn"
-  model: text("model").notNull(),
-  cases: jsonb("cases")
-    .$type<
-      {
-        accountId: string;
-        predictedStage: string;
-        actualStage: string;
-        grounded: boolean;
-        complete: boolean;
-      }[]
-    >()
-    .notNull(),
-});
-
 // A lightweight to-do per account — the SE's own checklist, separate from the agent's
 // generated next steps (those live on the brief). This is user-owned, mutable state.
 export const todos = pgTable(
@@ -182,5 +159,4 @@ export type Account = typeof accounts.$inferSelect;
 export type Contact = typeof contacts.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
 export type Brief = typeof briefs.$inferSelect;
-export type EvalRun = typeof evalRuns.$inferSelect;
 export type Todo = typeof todos.$inferSelect;
