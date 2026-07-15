@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { Pill } from "@/components/ui/pill";
 import { StageTracker } from "@/components/account/stage-tracker";
 import { AccountPanels, type ActivityRow, type TodoRow } from "@/components/account/account-panels";
+import { EditableAm } from "@/components/account/editable-am";
 import { getAccount, getLatestBrief, getTodos } from "@/data/repository";
 import { hasDb } from "@/db/client";
 import type { Priority, Stage } from "@/lib/domain";
@@ -101,7 +102,10 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
               <Kv k="ARR" v={formatArr(account.arr)} />
               <Kv k="Priority" v={priority.label} />
               <Kv k="Close target" v={account.closeTarget ?? "—"} />
-              <Kv k="Account mgr" v={account.amName ?? "—"} />
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sub">Account mgr</span>
+                <EditableAm accountId={account.id} initial={account.amName ?? ""} canEdit={hasDb} />
+              </div>
               {champion && <Kv k="Champion" v={champion.name} />}
               {economicBuyer && <Kv k="Economic buyer" v={economicBuyer.name} />}
             </div>

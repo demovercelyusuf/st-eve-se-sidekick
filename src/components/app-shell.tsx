@@ -1,7 +1,10 @@
 import { cookies } from "next/headers";
 import { DEFAULT_THEME, isThemeId, THEME_COOKIE, type ThemeId } from "@/lib/themes";
+import { getPatch, getPersonas } from "@/data/repository";
+import { hasDb } from "@/db/client";
 import { ThemeSwitcher } from "./theme-switcher";
 import { SidebarNav } from "./sidebar-nav";
+import { ProfileMenu } from "./profile-menu";
 
 /**
  * Desktop chrome — the top bar (brand, theme switcher, persona) and the workspace
@@ -12,16 +15,23 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const cookieTheme = (await cookies()).get(THEME_COOKIE)?.value;
   const theme: ThemeId = isThemeId(cookieTheme) ? cookieTheme : DEFAULT_THEME;
 
+  // The header shows who you are and how many AMs you're spread across — derived from the patch.
+  const [personas, patch] = await Promise.all([getPersonas(), getPatch("you")]);
+  const me = personas.find((p) => p.id === "you");
+  const ams = [...new Set(patch.accounts.map((a) => a.amName).filter((x): x is string => Boolean(x)))];
+
   return (
     <div className="flex min-h-screen flex-col bg-bg text-ink">
       <header className="flex h-16 items-center justify-between border-b border-border bg-surface px-6">
         <span className="text-lg font-bold text-accent">st·eve</span>
         <div className="flex items-center gap-4">
           <ThemeSwitcher initial={theme} />
-          <div className="flex items-center gap-2 rounded-full bg-muted-soft px-3 py-1.5 text-[13px]">
-            <span className="font-medium">SE: You</span>
-            <span className="text-sub">4 AM patches · 14 accounts</span>
-          </div>
+          <ProfileMenu
+            name={me?.name ?? "You"}
+            accountCount={patch.accounts.length}
+            ams={ams}
+            canEdit={hasDb}
+          />
         </div>
       </header>
 
