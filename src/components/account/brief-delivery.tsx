@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { postToSlackAction } from "@/app/actions";
+import { track } from "@/lib/analytics";
 
 // Where the brief becomes action. The Salesforce summary copies to the clipboard (the real
 // write-back is a Q4 integration), and the Slack update renders as an actual Slack message —
@@ -48,6 +49,7 @@ export function BriefDelivery({
     try {
       await navigator.clipboard.writeText(sfdcSummary);
       setSfNote("Copied — paste into the Opportunity. Full Salesforce integration lands Q4. 🗓️");
+      track("salesforce_summary_copied", { account: accountName });
     } catch {
       setSfNote("Couldn't reach the clipboard — select and copy manually.");
     }
@@ -68,8 +70,10 @@ export function BriefDelivery({
         // only claim "Posted <time>" when the webhook actually delivered
         setPostedAt(now);
         setSlackNote(`Posted to #${channel} ✅`);
+        track("slack_update_posted", { account: accountName, channel });
       } else {
         setSlackNote(`Copied — ready to paste into #${channel}.`);
+        track("slack_update_copied", { account: accountName, channel });
       }
     } catch {
       setSlackNote(`Copied — ready to paste into #${channel}.`);

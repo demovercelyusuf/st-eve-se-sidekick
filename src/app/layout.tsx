@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Geist, Poppins, Space_Grotesk } from "next/font/google";
 import "./globals.css";
@@ -26,6 +26,14 @@ export const metadata: Metadata = {
   title: "st-eve · SE copilot",
   description:
     "An AI sidekick for solutions engineers: turn a patch of accounts into grounded, prioritized decisions ready for Salesforce and Slack.",
+};
+
+// viewport-fit=cover lets the floating dock (which sits at the very bottom on phones) sit above
+// the home-indicator safe area instead of under it. dvh units in the layout handle the rest.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({

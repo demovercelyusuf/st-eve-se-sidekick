@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { THEME_COOKIE, THEMES, type ThemeId } from "@/lib/themes";
+import { track } from "@/lib/analytics";
 
 /**
  * The circle swatches. Clicking one flips data-theme on <html> for an instant re-skin
@@ -16,6 +17,7 @@ export function ThemeSwitcher({ initial }: { initial: ThemeId }) {
     document.documentElement.dataset.theme = id; // imperative re-skin — see eslint config note
     // keep it for a year; the server reads this on the next load
     document.cookie = `${THEME_COOKIE}=${id}; path=/; max-age=31536000; samesite=lax`;
+    track("theme_changed", { theme: id });
   }
 
   return (

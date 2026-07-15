@@ -23,6 +23,7 @@
     "drizzle-orm": "^0.45.2",
     "framer-motion": "^12.42.2",
     "next": "16.2.10",
+    "posthog-js": "^1.400.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "zod": "^4.4.3"

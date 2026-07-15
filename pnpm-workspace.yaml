@@ -1,5 +1,7 @@
-# These native deps are allowed to run their install/build scripts; pnpm blocks everything else.
+# Deps allowed to run their install/build scripts; pnpm blocks everything else by default.
+# core-js only prints a funding banner; esbuild/sharp/unrs-resolver are native and need building.
 allowBuilds:
+  core-js: true
   esbuild: true
   sharp: true
   unrs-resolver: true
