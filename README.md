@@ -49,18 +49,13 @@ Full system diagram + wireframes + the four-theme matrix live in Figma (see [Des
 
 ```bash
 pnpm install
-cp .env.local.example .env.local     # add AI_GATEWAY_API_KEY; DATABASE_URL and SLACK_WEBHOOK_URL are optional
-pnpm dev                             # http://localhost:3000
-pnpm eval                            # run the regression gate (exits non-zero on a warn)
+pnpm dev                             # http://localhost:3000 — runs on the fallback, no secrets needed
+pnpm eval                            # the regression gate (exits non-zero on a warn)
 ```
 
-Everything runs with **zero config**: with no `AI_GATEWAY_API_KEY`, generation and evals use the deterministic fallback; with no `DATABASE_URL`, generated briefs/eval-runs live in memory. Add the env vars to switch on real Sonnet 5, Neon persistence, and live Slack.
+**Zero config by default** — with no gateway credential, generation and evals use the deterministic fallback; with no `DATABASE_URL`, generated briefs and eval-runs live in memory.
 
-| Env var | What it turns on |
-|---|---|
-| `AI_GATEWAY_API_KEY` | Real Claude Sonnet 5 (or Vercel OIDC via `vercel link`) |
-| `DATABASE_URL` | Neon persistence for briefs + eval runs |
-| `SLACK_WEBHOOK_URL` | Live "Post to Slack" |
+**Secrets stay in Vercel, encrypted — never in the repo, and there's no standing API key.** The gateway authenticates with **OIDC** (automatic on Vercel; `vercel link && vercel env pull` gives a short-lived, rotating token locally — not a permanent key on disk). Neon's `DATABASE_URL` is auto-injected by the Marketplace integration, and the Slack webhook is a Sensitive env var. See `.env.local.example`.
 
 ## Design
 
