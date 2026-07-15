@@ -6,7 +6,6 @@ import { Pill } from "@/components/ui/pill";
 import { formatArr, priorityBadge, stageBadge, TONE_CLASS } from "@/lib/ui";
 import { PRIORITY_LABEL, STAGE_LABEL, STAGE_ORDER, type Priority, type Stage } from "@/lib/domain";
 import { addAccountAction, deleteAccountAction, updateAccountAction } from "@/app/actions";
-import { track } from "@/lib/analytics";
 
 // The row shape the server hands down — lastTouch is pre-formatted so we don't drag the seed
 // anchor into the client bundle.
@@ -278,10 +277,8 @@ function AddAccountForm({ onCancel, onAdded }: { onCancel: () => void; onAdded: 
     };
     const id = await addAccountAction(input);
     setBusy(false);
-    if (id) {
-      track("account_created", { stage: input.stage, priority: input.priority });
-      onAdded({ id, atRisk: false, touchLabel: "just now", ...input });
-    } else onCancel(); // no DB (seed mode) — nothing persisted
+    if (id) onAdded({ id, atRisk: false, touchLabel: "just now", ...input });
+    else onCancel(); // no DB (seed mode) — nothing persisted
   }
 
   const field = "rounded-[var(--radius)] border border-border bg-bg px-2 py-1.5 text-sm outline-none focus:border-accent";

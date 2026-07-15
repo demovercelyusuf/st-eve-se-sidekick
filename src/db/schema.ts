@@ -184,8 +184,3 @@ export type Activity = typeof activities.$inferSelect;
 export type Brief = typeof briefs.$inferSelect;
 export type EvalRun = typeof evalRuns.$inferSelect;
 export type Todo = typeof todos.$inferSelect;
-export type NewTodo = typeof todos.$inferInsert;
-
-export type AccountSeed = typeof accounts.$inferInsert;
-export type ContactSeed = typeof contacts.$inferInsert;
-export type ActivitySeed = typeof activities.$inferInsert;

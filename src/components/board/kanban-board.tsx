@@ -6,7 +6,6 @@ import { Pill } from "@/components/ui/pill";
 import { formatArr, priorityBadge } from "@/lib/ui";
 import { PRIORITY_LABEL, STAGE_LABEL, STAGE_ORDER, type Priority, type Stage } from "@/lib/domain";
 import { updateAccountAction } from "@/app/actions";
-import { track } from "@/lib/analytics";
 
 export type BoardCard = {
   id: string;
@@ -34,7 +33,6 @@ export function KanbanBoard({ initial, canEdit }: { initial: BoardCard[]; canEdi
     const card = cards.find((c) => c.id === id);
     if (!card || card.stage === stage) return;
     setCards((cs) => cs.map((c) => (c.id === id ? { ...c, stage } : c)));
-    track("account_stage_changed", { from: card.stage, to: stage });
     updateAccountAction(id, { stage });
   }
 
